@@ -1,0 +1,2 @@
+# This is showing that scripts can call other scripts (pipes fancyscript to more to make it more readable)
+fancyscript | more

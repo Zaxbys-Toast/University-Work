@@ -1,0 +1,96 @@
+     1                                  ; NAME Will King
+     2                                  ; Assignment Reverse Array
+     3                                  ; Date 11/8/23
+     4                                  ; Etc...
+     5                                  
+     6                                  SECTION .data
+     7                                  ; define data/variables here.  Think DB, DW, DD, DQ
+     8 00000000 010000000200000003-     array1: dd      1,2,3,4,5
+     9 00000009 000000040000000500-
+    10 00000012 0000               
+    11                                  len1:   EQU     ($-array1)
+    12                                  
+    13                                  
+    14 00000014 F6FFFFFFF7FFFFFFF8-     array2: dd      -10, -9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9
+    15 0000001D FFFFFFF9FFFFFFFAFF-
+    16 00000026 FFFFFBFFFFFFFCFFFF-
+    17 0000002F FFFDFFFFFFFEFFFFFF-
+    18 00000038 FFFFFFFF0000000001-
+    19 00000041 000000020000000300-
+    20 0000004A 000004000000050000-
+    21 00000053 000600000007000000-
+    22 0000005C 0800000009000000   
+    23                                  len2:   EQU     ($-array2)
+    24                                  
+    25                                  
+    26 00000064 000000000A00000014-     array3: dd  0,10,20,30,40,50,60,70,80,90
+    27 0000006D 0000001E0000002800-
+    28 00000076 0000320000003C0000-
+    29 0000007F 004600000050000000-
+    30 00000088 5A000000           
+    31 0000008C 640000006E00000078-       dd  100,110,120,130,140,150,160,170,180,190
+    32 00000095 000000820000008C00-
+    33 0000009E 000096000000A00000-
+    34 000000A7 00AA000000B4000000-
+    35 000000B0 BE000000           
+    36 000000B4 C8000000D2000000DC-       dd  200,210,220,230,240,250,260,270,280,290
+    37 000000BD 000000E6000000F000-
+    38 000000C6 0000FA000000040100-
+    39 000000CF 000E01000018010000-
+    40 000000D8 22010000           
+    41 000000DC 2C0100003601000040-       dd  300,310,320,330,340,350,360,370,380,390
+    42 000000E5 0100004A0100005401-
+    43 000000EE 00005E010000680100-
+    44 000000F7 00720100007C010000-
+    45 00000100 86010000           
+    46 00000104 900100009A010000A4-       dd  400,410,420,430,440,450,460,470,480,490,500
+    47 0000010D 010000AE010000B801-
+    48 00000116 0000C2010000CC0100-
+    49 0000011F 00D6010000E0010000-
+    50 00000128 EA010000F4010000   
+    51                                  len3:   EQU     ($-array3)
+    52                                  SECTION .bss
+    53                                  ; define uninitialized data here
+    54                                  
+    55                                  SECTION .text
+    56                                  global _main
+    57                                  _main:
+    58                                  
+    59                                  ; put your code here.
+    60                                  
+    61 00000000 B8[00000000]            mov eax, array1
+    62 00000005 BB05000000              mov dword ebx, len1/4
+    63 0000000A E80C000000              call revArray
+    64                                  
+    65                                  
+    66                                  
+    67                                  lastBreak:
+    68                                  ; Normal termination code
+    69 0000000F B801000000              mov eax, 1
+    70 00000014 BB00000000              mov ebx, 0
+    71 00000019 CD80                    int 80h
+    72                                  
+    73                                  ;uses eax as the memory address for the array
+    74                                  ;uses ebx as the length of the array
+    75                                  revArray:
+    76                                  ;preserve the values in the registers that are getting used
+    77 0000001B 57                      	push edi
+    78 0000001C 51                      	push ecx
+    79 0000001D BF00000000              	mov edi, 0
+    80 00000022 89D9                    	mov ecx, ebx
+    81                                  ;loop through the array and push everything onto the stack
+    82                                  	loopPush:
+    83 00000024 FF3438                  		push dword [eax + edi]
+    84 00000027 83C704                  		add dword edi, 4
+    85 0000002A E2F8                    		loop loopPush
+    86 0000002C BF00000000              	mov edi, 0
+    87 00000031 89D9                    	mov ecx, ebx
+    88                                  ;loop through the array and pop all of the values back into the array. Will be reversed
+    89                                  	loopPop:
+    90 00000033 8F0438                  		pop dword [eax + edi]
+    91 00000036 83C704                  		add dword edi, 4
+    92 00000039 E2F8                    		loop loopPop
+    93                                  ;restore the register values
+    94 0000003B 59                      	pop ecx
+    95 0000003C 5F                      	pop edi
+    96 0000003D C3                      	ret

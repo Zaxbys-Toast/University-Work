@@ -1,0 +1,114 @@
+     1                                  ; Will King
+     2                                  ; Program 9: Sort Array
+     3                                  ; 11/13/2023
+     4                                  ; Etc...
+     5                                  
+     6                                  
+     7                                  %macro prt 2
+     8                                  	pusha
+     9                                  	mov eax, 4
+    10                                  	mov ebx, 1
+    11                                  	mov ecx, %1
+    12                                  	mov edx, %2
+    13                                  	int 80h
+    14                                  	popa
+    15                                  %endmacro
+    16                                  
+    17                                  SECTION	.data
+    18                                  ; define data/variables here.  Think DB, DW, DD, DQ
+    19 00000000 D007B80B0000FFFF00-     nums:	dw	 2000, 3000, 0, 65535, 0, 1, 2, 3, 100
+    20 00000009 000100020003006400 
+    21                                  numslen: 	EQU 	($-nums)
+    22 00000012 57696C6C2773204172-     title: db "Will's Array Sorting Program", 10, 0
+    23 0000001B 72617920536F727469-
+    24 00000024 6E672050726F677261-
+    25 0000002D 6D0A00             
+    26 00000030 4F726967696E616C20-     header: db "Original Array", 10, 0
+    27 00000039 41727261790A00     
+    28                                  titlelen:	EQU	($-title)
+    29                                  headerlen:	EQU	($-header)
+    30                                  SECTION .bss
+    31                                  ; define uninitialized data here
+    32                                  
+    33                                  SECTION .text
+    34                                  global _main
+    35                                  _main:
+    36                                  ; put your code here.
+    37                                  ; Print title, "Will's Sorting Program"
+    38                                  prt title, titlelen
+    39 00000000 60                  <1>  pusha
+    40 00000001 B804000000          <1>  mov eax, 4
+    41 00000006 BB01000000          <1>  mov ebx, 1
+    42 0000000B B9[12000000]        <1>  mov ecx, %1
+    43 00000010 BA2E000000          <1>  mov edx, %2
+    44 00000015 CD80                <1>  int 80h
+    45 00000017 61                  <1>  popa
+    46                                  ; Print header, "Original Array"
+    47                                  prt header, headerlen
+    48 00000018 60                  <1>  pusha
+    49 00000019 B804000000          <1>  mov eax, 4
+    50 0000001E BB01000000          <1>  mov ebx, 1
+    51 00000023 B9[30000000]        <1>  mov ecx, %1
+    52 00000028 BA10000000          <1>  mov edx, %2
+    53 0000002D CD80                <1>  int 80h
+    54 0000002F 61                  <1>  popa
+    55                                  ; Print Original Array
+    56                                  conversion_loop:
+    57 00000030 8B06                        mov eax, [esi]      ; Load the current number from the array
+    58 00000032 E845000000                  call intToString    ; Convert it to a string
+    59 00000037 89C7                        mov edi, eax        ; Store the address of the converted string in edi
+    60 00000039 BB04000000                  mov ebx, 4          ; File descriptor (stdout)
+    61 0000003E 89F9                        mov ecx, edi        ; Address of the string to print
+    62 00000040 BA02000000                  mov edx, 2          ; Length of the string (assuming each number is a word)
+    63 00000045 CD80                        int 0x80            ; Print the converted string
+    64 00000047 83C602                      add esi, 2          ; Move to the next word in the array
+    65 0000004A E2E4                        loop conversion_loop; Continue until all elements are converted and printed
+    66 0000004C BF[00000000]            mov edi, nums          ; Set edi to point to the start of the converted strings
+    67                                  prt edi, numslen / 2   ; Print the converted stringsss
+    68 00000051 60                  <1>  pusha
+    69 00000052 B804000000          <1>  mov eax, 4
+    70 00000057 BB01000000          <1>  mov ebx, 1
+    71 0000005C 89F9                <1>  mov ecx, %1
+    72 0000005E BA09000000          <1>  mov edx, %2
+    73 00000063 CD80                <1>  int 80h
+    74 00000065 61                  <1>  popa
+    75                                  ;normal termination code
+    76 00000066 B801000000              mov eax, 1
+    77 0000006B BB00000000              mov ebx, 0
+    78                                  	
+    79                                  ; Normal termination code
+    80 00000070 B801000000              mov eax, 1
+    81 00000075 BB00000000              mov ebx, 0
+    82 0000007A CD80                    int 80h
+    83                                  
+    84                                  intToString:
+    85 0000007C 60                      	pusha
+    86 0000007D 31DB                    	xor ebx, ebx
+    87                                  	pushLoop:
+    88 0000007F 31D2                    		xor edx, edx
+    89 00000081 B90A000000              		mov ecx, 10
+    90 00000086 F7F1                    		div ecx
+    91 00000088 83C230                  		add edx, 48
+    92 0000008B 52                      		push edx
+    93 0000008C 43                      		inc ebx
+    94 0000008D 83F800                  		cmp eax, 0
+    95 00000090 75ED                    		jnz pushLoop
+    96                                  	popLoop:
+    97 00000092 58                      		pop eax
+    98 00000093 89C7                    		mov edi, eax
+    99 00000095 4B                      		dec ebx
+   100 00000096 83FB00                  		cmp ebx, 0
+   101 00000099 7FF7                    		jg popLoop
+   102 0000009B C3                      	ret
+   103                                  	
+   104                                  	
+   105                                  	
+   106                                  	
+   107                                  	
+   108                                  	
+   109                                  
+   110                                  
+   111                                  
+   112                                  
+   113                                  
+   114                                  

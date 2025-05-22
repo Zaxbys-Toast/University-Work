@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Custom commands
+
+cycall() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: cycall <userid>"
+    else
+	local userid=$1
+	local info=$(grep "^$userid:" /etc/passwd)
+        if [ -z "$info" ]; then
+            echo "$userid, UNKNOWN, UNKNOWN"
+        else
+            local fullname=$(echo "$info" | cut -d: -f5 | cut -d, -f1)
+            local phone=$(echo "$info" | cut -d: -f5 | cut -d, -f3)
+            echo -e "$userid \n FULL NAME: $fullname \n PHONE NUMBER: $phone"
+        fi
+
+    fi
+}
+
+cyshow() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: cyshow <filename>"
+    else
+        cat $1 | less
+    fi
+}
+
+cyvi() {
+    if [ $# -eq 0 ]; then
+	echo "Usage: cyvi <filename>"
+    else
+        vim $1
+    fi
+}
+
+big() {
+    ../bigbrother/bigbrother $@
+}
+while true; do
+    echo -n "Cybash> "
+
+    read command
+
+    # Exit the loop
+    if [ "$command" == "cybye" ]; then
+        break
+    
+    # Show the contents of a file with more
+    elif [[ "$command" =~ ^cyshow\ (.+)$ ]]; then
+  	cyshow "${BASH_REMATCH[1]}"
+    # Find the phone number fill name and office phone number of the userid provided 
+    elif [[ "$command" =~ ^cycall\ (.+)$  ]]; then
+	cycall "${BASH_REMATCH[1]}"
+    # Display all of hte users currently logged in
+    elif [ "$command" == "cylist" ]; then
+        who | cut -d " " -f1
+
+    # Show the contents of the current directory
+    elif [ "$command" == "cystuff" ]; then
+        ls
+
+    # Display all of the available commands except for cyguy
+    elif [ "$command" == "cyhelp" ]; then
+    	echo -e "\ncyshow <filename> : Show the contents of a file \n\ncycall <userid> : Lookup phone number and fullname of a userid\n\n
+cylist : Display users currently logged on\n\ncystuff : list the contents of the current directory\n\ncyhelp : Display a list of available com
+mands\n\ncycrazy : Do something crazy\n\ncyvi <filename> : Open a text editor\n\nbigbrother [args] : Run the bigbrother command\n\ncybye : Exit the shell\n"
+
+    # Open an actual bash shell INSIDE of the cybash shell
+    elif [ "$command" == "cyguy" ]; then
+	while true; do
+	   echo -n "FakeBash> "
+	   read command
+           if [ "$command" == "exit" ]; then
+		break
+	   else
+	        eval "$command"
+	   fi
+	done
+    # Do something crazy
+    elif [ "$command" == "cycrazy" ]; then
+	word="Oh look at the time!"
+	colors=(31 32 33 34 35 36 37)
+	start_time=$SECONDS
+	while [ $((SECONDS - start_time)) -lt 10 ]; do
+    	    for color in "${colors[@]}"; do
+		time=$(date "+%H:%M:%S")
+		echo -e "\033c"
+        	echo -e "\033[1;${color}m${word} ${time}\033[0m"
+        	sleep 0.5  # Change color every 0.5 seconds
+    	    done
+	done
+    # Open a text editor
+    elif [[ "$command" =~ ^cyvi\ (.+)$ ]]; then
+	cyvi "${BASH_REMATCH[1]}"
+    # Use the bigbrother command
+    elif [[ "$command" =~ ^bigbrother\ (.*)$ || "$command" == "bigbrother" ]]; then
+        big "${BASH_REMATCH[1]}"
+    # Quit the program
+    else
+	echo "You aren't allowed to use that command :("
+    fi
+done	

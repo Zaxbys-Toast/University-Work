@@ -1,0 +1,675 @@
+     1                                  ; Will King
+     2                                  ; p10 - Happy Python
+     3                                  ; 12/5/2023
+     4                                  ; Etc...
+     5                                  
+     6                                  %macro prt 2
+     7                                  	pusha
+     8                                  	mov eax, 4
+     9                                  	mov ebx, 1
+    10                                  	mov ecx, %1
+    11                                  	mov edx, %2
+    12                                  	int 80h
+    13                                  	popa
+    14                                  %endmacro
+    15                                  
+    16                                  %macro prtPython 0
+    17                                  	prt python, pythonSize
+    18                                  %endmacro
+    19                                  
+    20                                  ;;;;;  OpenFile needs permissions ecx:  0=readonly   101h = write
+    21                                  %macro OpenFile 1
+    22                                          pusha
+    23                                          mov     eax,5
+    24                                          mov     ebx,fileName
+    25                                          mov     ecx,%1
+    26                                          int     80h
+    27                                          mov     [fileDescriptor],eax
+    28                                          popa
+    29                                  %endmacro
+    30                                  
+    31                                  ;;;; ReadFile from file needs 3 parms:  file descriptor (var), input buffer (var), length
+    32                                  %macro ReadFile 3
+    33                                          pusha
+    34                                          mov     eax,3 ;sys read
+    35                                          mov     ebx,[%1]
+    36                                          mov     ecx,%2
+    37                                          mov     edx,%3
+    38                                          int     80h
+    39                                          popa
+    40                                  %endmacro
+    41                                  
+    42                                  ;;;; WriteFile needs 3 parms: file descriptor (var), buffer (var), length
+    43                                  %macro WriteFile 3
+    44                                          pusha
+    45                                          mov     eax,4
+    46                                          mov     ebx,[%1]
+    47                                          mov     ecx,%2
+    48                                          mov     edx,%3
+    49                                          int     80h
+    50                                          popa
+    51                                  %endmacro
+    52                                  
+    53                                  ;;;; CloseFile needs no arguments
+    54                                  %macro CloseFile 0
+    55                                          pusha
+    56                                          mov     eax,6
+    57                                          mov     ebx,[fileDescriptor]
+    58                                          int     80h
+    59                                          popa
+    60                                  %endmacro
+    61                                  
+    62                                  STRUC py
+    63 00000000 <res 00000002>          	.stuff RESB 2
+    64 00000002 <res 00000002>          	.row RESB 2
+    65 00000004 <res 00000001>          	.semi RESB 1
+    66 00000005 <res 00000002>          	.col RESB 2
+    67 00000007 <res 00000002>          	.char RESB 2
+    68                                  	.size:
+    69                                  ENDSTRUC
+    70                                  
+    71                                  %macro NormalTermination 0
+    72                                          mov eax, 1
+    73                                          mov ebx, 0
+    74                                          int 80h
+    75                                  %endmacro
+    76                                  SECTION .data 
+    77                                  ; define data/variables here.  Think DB, DW, DD, DQ
+    78                                  ; Printing Stuff
+    79 00000000 1B5B30323B34304840      python: db      1bh,'[02;40H@'
+    80 00000009 1B5B30323B3431482A              db      1bh,'[02;41H*'
+    81 00000012 1B5B30323B3432482A              db      1bh,'[02;42H*'
+    82 0000001B 1B5B30323B3433482A              db      1bh,'[02;43H*'
+    83 00000024 1B5B30323B3434482A              db      1bh,'[02;44H*'
+    84 0000002D 1B5B30323B3435482A              db      1bh,'[02;45H*'
+    85 00000036 1B5B30323B3436482B              db      1bh,'[02;46H+'
+    86 0000003F 1B5B30323B34374820              db      1bh,'[02;47H '
+    87                                  pythonSize:  EQU  $-python
+    88                                  
+    89 00000048 1B5B30313B303148        resetCursor:	db	1bh,'[01;01H'
+    90                                  
+    91 00000050 1B5B324A                cls:	db	1bh,'[2J'
+    92                                  clsLen:	EQU	$-cls
+    93                                  
+    94                                  ;;;;;;; Screen Pattern
+    95 00000054 2A2A2A2A2A2A2A2A2A-     screen: db      "********************************************************************************",0ah
+    96 0000005D 2A2A2A2A2A2A2A2A2A-
+    97 00000066 2A2A2A2A2A2A2A2A2A-
+    98 0000006F 2A2A2A2A2A2A2A2A2A-
+    99 00000078 2A2A2A2A2A2A2A2A2A-
+   100 00000081 2A2A2A2A2A2A2A2A2A-
+   101 0000008A 2A2A2A2A2A2A2A2A2A-
+   102 00000093 2A2A2A2A2A2A2A2A2A-
+   103 0000009C 2A2A2A2A2A2A2A2A0A 
+   104 000000A5 2A2020202020202020-             db      "*                          *                           *                       *",0ah
+   105 000000AE 202020202020202020-
+   106 000000B7 202020202020202020-
+   107 000000C0 2A2020202020202020-
+   108 000000C9 202020202020202020-
+   109 000000D2 202020202020202020-
+   110 000000DB 202A20202020202020-
+   111 000000E4 202020202020202020-
+   112 000000ED 202020202020202A0A 
+   113 000000F6 2A2020202020202A2A-             db      "*      *************       *        *************      *       *********       *",0ah
+   114 000000FF 2A2A2A2A2A2A2A2A2A-
+   115 00000108 2A2A20202020202020-
+   116 00000111 2A2020202020202020-
+   117 0000011A 2A2A2A2A2A2A2A2A2A-
+   118 00000123 2A2A2A2A2020202020-
+   119 0000012C 202A20202020202020-
+   120 00000135 2A2A2A2A2A2A2A2A2A-
+   121 0000013E 202020202020202A0A 
+   122 00000147 2A2020202020202020-             db      "*                          *                           *                       *",0ah
+   123 00000150 202020202020202020-
+   124 00000159 202020202020202020-
+   125 00000162 2A2020202020202020-
+   126 0000016B 202020202020202020-
+   127 00000174 202020202020202020-
+   128 0000017D 202A20202020202020-
+   129 00000186 202020202020202020-
+   130 0000018F 202020202020202A0A 
+   131 00000198 2A2020202020202020-             db      "*                          *                           *                       *",0ah
+   132 000001A1 202020202020202020-
+   133 000001AA 202020202020202020-
+   134 000001B3 2A2020202020202020-
+   135 000001BC 202020202020202020-
+   136 000001C5 202020202020202020-
+   137 000001CE 202A20202020202020-
+   138 000001D7 202020202020202020-
+   139 000001E0 202020202020202A0A 
+   140 000001E9 2A2020202020202020-             db      "*                          *                           *                       *",0ah
+   141 000001F2 202020202020202020-
+   142 000001FB 202020202020202020-
+   143 00000204 2A2020202020202020-
+   144 0000020D 202020202020202020-
+   145 00000216 202020202020202020-
+   146 0000021F 202A20202020202020-
+   147 00000228 202020202020202020-
+   148 00000231 202020202020202A0A 
+   149 0000023A 2A2020202020202020-             db      "*                                                                              *",0ah
+   150 00000243 202020202020202020-
+   151 0000024C 202020202020202020-
+   152 00000255 202020202020202020-
+   153 0000025E 202020202020202020-
+   154 00000267 202020202020202020-
+   155 00000270 202020202020202020-
+   156 00000279 202020202020202020-
+   157 00000282 202020202020202A0A 
+   158 0000028B 2A2020202020202020-             db      "*           **************************        ***********************          *",0ah
+   159 00000294 2020202A2A2A2A2A2A-
+   160 0000029D 2A2A2A2A2A2A2A2A2A-
+   161 000002A6 2A2A2A2A2A2A2A2A2A-
+   162 000002AF 2A2A20202020202020-
+   163 000002B8 202A2A2A2A2A2A2A2A-
+   164 000002C1 2A2A2A2A2A2A2A2A2A-
+   165 000002CA 2A2A2A2A2A2A202020-
+   166 000002D3 202020202020202A0A 
+   167 000002DC 2A2020202020202020-             db      "*                                *               *                             *",0ah
+   168 000002E5 202020202020202020-
+   169 000002EE 202020202020202020-
+   170 000002F7 2020202020202A2020-
+   171 00000300 202020202020202020-
+   172 00000309 202020202A20202020-
+   173 00000312 202020202020202020-
+   174 0000031B 202020202020202020-
+   175 00000324 202020202020202A0A 
+   176 0000032D 2A2020202020202020-             db      "*                                *     ***********                             *",0ah
+   177 00000336 202020202020202020-
+   178 0000033F 202020202020202020-
+   179 00000348 2020202020202A2020-
+   180 00000351 2020202A2A2A2A2A2A-
+   181 0000035A 2A2A2A2A2A20202020-
+   182 00000363 202020202020202020-
+   183 0000036C 202020202020202020-
+   184 00000375 202020202020202A0A 
+   185 0000037E 2A2020202020202020-             db      "*                          *     *               *     *                       *",0ah
+   186 00000387 202020202020202020-
+   187 00000390 202020202020202020-
+   188 00000399 2A20202020202A2020-
+   189 000003A2 202020202020202020-
+   190 000003AB 202020202A20202020-
+   191 000003B4 202A20202020202020-
+   192 000003BD 202020202020202020-
+   193 000003C6 202020202020202A0A 
+   194 000003CF 2A2020202020202020-             db      "*                          *     **********      *     *                       *",0ah
+   195 000003D8 202020202020202020-
+   196 000003E1 202020202020202020-
+   197 000003EA 2A20202020202A2A2A-
+   198 000003F3 2A2A2A2A2A2A2A2020-
+   199 000003FC 202020202A20202020-
+   200 00000405 202A20202020202020-
+   201 0000040E 202020202020202020-
+   202 00000417 202020202020202A0A 
+   203 00000420 2A2020202020202020-             db      "*                          *     *               *     *                       *",0ah
+   204 00000429 202020202020202020-
+   205 00000432 202020202020202020-
+   206 0000043B 2A20202020202A2020-
+   207 00000444 202020202020202020-
+   208 0000044D 202020202A20202020-
+   209 00000456 202A20202020202020-
+   210 0000045F 202020202020202020-
+   211 00000468 202020202020202A0A 
+   212 00000471 2A2020202020202020-             db      "*                          *     *      **********     *                       *",0ah
+   213 0000047A 202020202020202020-
+   214 00000483 202020202020202020-
+   215 0000048C 2A20202020202A2020-
+   216 00000495 202020202A2A2A2A2A-
+   217 0000049E 2A2A2A2A2A20202020-
+   218 000004A7 202A20202020202020-
+   219 000004B0 202020202020202020-
+   220 000004B9 202020202020202A0A 
+   221 000004C2 2A2020202020202020-             db      "*                          *                           *                       *",0ah
+   222 000004CB 202020202020202020-
+   223 000004D4 202020202020202020-
+   224 000004DD 2A2020202020202020-
+   225 000004E6 202020202020202020-
+   226 000004EF 202020202020202020-
+   227 000004F8 202A20202020202020-
+   228 00000501 202020202020202020-
+   229 0000050A 202020202020202A0A 
+   230 00000513 2A2020202020202020-             db      "*                                                                              *",0ah
+   231 0000051C 202020202020202020-
+   232 00000525 202020202020202020-
+   233 0000052E 202020202020202020-
+   234 00000537 202020202020202020-
+   235 00000540 202020202020202020-
+   236 00000549 202020202020202020-
+   237 00000552 202020202020202020-
+   238 0000055B 202020202020202A0A 
+   239 00000564 2A2020202020202020-             db      "*           ***   ***   ***   ***   ***   ***   ***   ***   ***   ***          *",0ah
+   240 0000056D 2020202A2A2A202020-
+   241 00000576 2A2A2A2020202A2A2A-
+   242 0000057F 2020202A2A2A202020-
+   243 00000588 2A2A2A2020202A2A2A-
+   244 00000591 2020202A2A2A202020-
+   245 0000059A 2A2A2A2020202A2A2A-
+   246 000005A3 2020202A2A2A202020-
+   247 000005AC 202020202020202A0A 
+   248 000005B5 2A2020202020202020-             db      "*                                                                              *",0ah
+   249 000005BE 202020202020202020-
+   250 000005C7 202020202020202020-
+   251 000005D0 202020202020202020-
+   252 000005D9 202020202020202020-
+   253 000005E2 202020202020202020-
+   254 000005EB 202020202020202020-
+   255 000005F4 202020202020202020-
+   256 000005FD 202020202020202A0A 
+   257 00000606 2A2020202020202020-             db      "*            *     *     *     *     *     *     *     *     *     *           *",0ah
+   258 0000060F 202020202A20202020-
+   259 00000618 202A20202020202A20-
+   260 00000621 202020202A20202020-
+   261 0000062A 202A20202020202A20-
+   262 00000633 202020202A20202020-
+   263 0000063C 202A20202020202A20-
+   264 00000645 202020202A20202020-
+   265 0000064E 202020202020202A0A 
+   266 00000657 2A2020202020202020-             db      "*               *     *     *     *     *     *     *     *     *              *",0ah
+   267 00000660 202020202020202A20-
+   268 00000669 202020202A20202020-
+   269 00000672 202A20202020202A20-
+   270 0000067B 202020202A20202020-
+   271 00000684 202A20202020202A20-
+   272 0000068D 202020202A20202020-
+   273 00000696 202A20202020202020-
+   274 0000069F 202020202020202A0A 
+   275 000006A8 2A2020202020202020-             db      "*            *     *     *     *     *  W  *     *     *     *     *           *",0ah
+   276 000006B1 202020202A20202020-
+   277 000006BA 202A20202020202A20-
+   278 000006C3 202020202A20202020-
+   279 000006CC 202A20205720202A20-
+   280 000006D5 202020202A20202020-
+   281 000006DE 202A20202020202A20-
+   282 000006E7 202020202A20202020-
+   283 000006F0 202020202020202A0A 
+   284 000006F9 2A2020202020202020-             db      "*               *     *     *     *     *     *     *     *     *              *",0ah
+   285 00000702 202020202020202A20-
+   286 0000070B 202020202A20202020-
+   287 00000714 202A20202020202A20-
+   288 0000071D 202020202A20202020-
+   289 00000726 202A20202020202A20-
+   290 0000072F 202020202A20202020-
+   291 00000738 202A20202020202020-
+   292 00000741 202020202020202A0A 
+   293 0000074A 2A2020202020202020-             db      "*            *     *     *     *     *     *     *     *     *     *           *",0ah
+   294 00000753 202020202A20202020-
+   295 0000075C 202A20202020202A20-
+   296 00000765 202020202A20202020-
+   297 0000076E 202A20202020202A20-
+   298 00000777 202020202A20202020-
+   299 00000780 202A20202020202A20-
+   300 00000789 202020202A20202020-
+   301 00000792 202020202020202A0A 
+   302 0000079B 2A2020202020202020-             db      "*               *     *     *     *     *     *     *     *     *              *",0ah
+   303 000007A4 202020202020202A20-
+   304 000007AD 202020202A20202020-
+   305 000007B6 202A20202020202A20-
+   306 000007BF 202020202A20202020-
+   307 000007C8 202A20202020202A20-
+   308 000007D1 202020202A20202020-
+   309 000007DA 202A20202020202020-
+   310 000007E3 202020202020202A0A 
+   311 000007EC 2A2A2A2A2A2A2A2A2A-             db      "********************************************************************************",0ah
+   312 000007F5 2A2A2A2A2A2A2A2A2A-
+   313 000007FE 2A2A2A2A2A2A2A2A2A-
+   314 00000807 2A2A2A2A2A2A2A2A2A-
+   315 00000810 2A2A2A2A2A2A2A2A2A-
+   316 00000819 2A2A2A2A2A2A2A2A2A-
+   317 00000822 2A2A2A2A2A2A2A2A2A-
+   318 0000082B 2A2A2A2A2A2A2A2A2A-
+   319 00000834 2A2A2A2A2A2A2A2A0A 
+   320 0000083D E9070000                screenSize:     dd $-screen
+   321                                  
+   322                                  
+   323                                  ; File Stuff
+   324 00000841 00000000                stdin   dd      0  ; used for read from stdin
+   325 00000845 01000000                stdout  dd      1  ; used for write to stdout
+   326 00000849 7A                      sleeping: db 'z'
+   327                                  
+   328 0000084A 0100000000000000        sec:    dd 1,0
+   329                                  
+   330 00000852 2E2F707974686F6E2E-     fileName:       db      './python.txt',0
+   331 0000085B 74787400           
+   332 0000085F 00000000                fileDescriptor: dd      0
+   333                                  
+   334                                  SECTION .bss
+   335                                  LEN     equ     1024
+   336 00000000 <res 00000400>          inputBuffer     RESB LEN
+   337 00000400 <res 00000004>          childPID        RESD 1
+   338                                  
+   339                                  SECTION .bss
+   340                                  ; define uninitialized data here
+   341                                  
+   342                                  SECTION .text
+   343                                  global _main, _sleep1
+   344                                  _main:
+   345                                  
+   346                                  ; put your code here.
+   347                                  prt cls, clsLen
+   348 00000000 60                  <1>  pusha
+   349 00000001 B804000000          <1>  mov eax, 4
+   350 00000006 BB01000000          <1>  mov ebx, 1
+   351 0000000B B9[50000000]        <1>  mov ecx, %1
+   352 00000010 BA04000000          <1>  mov edx, %2
+   353 00000015 CD80                <1>  int 80h
+   354 00000017 61                  <1>  popa
+   355                                  prtPython
+   356                              <1>  prt python, pythonSize
+   357 00000018 60                  <2>  pusha
+   358 00000019 B804000000          <2>  mov eax, 4
+   359 0000001E BB01000000          <2>  mov ebx, 1
+   360 00000023 B9[00000000]        <2>  mov ecx, %1
+   361 00000028 BA48000000          <2>  mov edx, %2
+   362 0000002D CD80                <2>  int 80h
+   363 0000002F 61                  <2>  popa
+   364                                  prt resetCursor, 8
+   365 00000030 60                  <1>  pusha
+   366 00000031 B804000000          <1>  mov eax, 4
+   367 00000036 BB01000000          <1>  mov ebx, 1
+   368 0000003B B9[48000000]        <1>  mov ecx, %1
+   369 00000040 BA08000000          <1>  mov edx, %2
+   370 00000045 CD80                <1>  int 80h
+   371 00000047 61                  <1>  popa
+   372                                  prt screen, screenSize
+   373 00000048 60                  <1>  pusha
+   374 00000049 B804000000          <1>  mov eax, 4
+   375 0000004E BB01000000          <1>  mov ebx, 1
+   376 00000053 B9[54000000]        <1>  mov ecx, %1
+   377 00000058 BA[3D080000]        <1>  mov edx, %2
+   378 0000005D CD80                <1>  int 80h
+   379 0000005F 61                  <1>  popa
+   380                                  
+   381                                          ;;;;   FORK 2 PROCS
+   382 00000060 B802000000                      mov     eax,2
+   383 00000065 CD80                            int     80h
+   384                                  
+   385 00000067 83F800                          cmp     eax,0
+   386 0000006A 7433                            je      childProc
+   387 0000006C A3[00040000]                    mov     [childPID],eax
+   388                                  
+   389                                  parent:
+   390                                  
+   391 00000071 E8A2000000                      call    _getCode
+   392                                          WriteFile stdout, inputBuffer, 1
+   393 00000076 60                  <1>  pusha
+   394 00000077 B804000000          <1>  mov eax,4
+   395 0000007C 8B1D[45080000]      <1>  mov ebx,[%1]
+   396 00000082 B9[00000000]        <1>  mov ecx,%2
+   397 00000087 BA01000000          <1>  mov edx,%3
+   398 0000008C CD80                <1>  int 80h
+   399 0000008E 61                  <1>  popa
+   400 0000008F 3C71                            cmp     al,'q'
+   401 00000091 7467                            je      theEnd
+   402 00000093 E8F0000000              	call movePython
+   403                                          ; sleep one second
+   404                                  time2sleep:
+   405 00000098 E8C1000000                      call _sleep1
+   406 0000009D EBD2                            jmp parent
+   407                                  
+   408                                  childProc:
+   409                                  
+   410                                          ReadFile stdin, inputBuffer, LEN
+   411 0000009F 60                  <1>  pusha
+   412 000000A0 B803000000          <1>  mov eax,3
+   413 000000A5 8B1D[41080000]      <1>  mov ebx,[%1]
+   414 000000AB B9[00000000]        <1>  mov ecx,%2
+   415 000000B0 BA00040000          <1>  mov edx,%3
+   416 000000B5 CD80                <1>  int 80h
+   417 000000B7 61                  <1>  popa
+   418                                  
+   419                                          ;; Open a file for communication
+   420                                          OpenFile 101h  ; for writing
+   421 000000B8 60                  <1>  pusha
+   422 000000B9 B805000000          <1>  mov eax,5
+   423 000000BE BB[52080000]        <1>  mov ebx,fileName
+   424 000000C3 B901010000          <1>  mov ecx,%1
+   425 000000C8 CD80                <1>  int 80h
+   426 000000CA A3[5F080000]        <1>  mov [fileDescriptor],eax
+   427 000000CF 61                  <1>  popa
+   428                                  
+   429                                          ;;; write  something to  bob.txt
+   430                                          WriteFile fileDescriptor, inputBuffer, 1
+   431 000000D0 60                  <1>  pusha
+   432 000000D1 B804000000          <1>  mov eax,4
+   433 000000D6 8B1D[5F080000]      <1>  mov ebx,[%1]
+   434 000000DC B9[00000000]        <1>  mov ecx,%2
+   435 000000E1 BA01000000          <1>  mov edx,%3
+   436 000000E6 CD80                <1>  int 80h
+   437 000000E8 61                  <1>  popa
+   438                                  
+   439                                          ;;;  close the file
+   440                                          CloseFile
+   441 000000E9 60                  <1>  pusha
+   442 000000EA B806000000          <1>  mov eax,6
+   443 000000EF 8B1D[5F080000]      <1>  mov ebx,[fileDescriptor]
+   444 000000F5 CD80                <1>  int 80h
+   445 000000F7 61                  <1>  popa
+   446                                  
+   447 000000F8 EBA5                            jmp childProc
+   448                                  
+   449                                  ; Normal termination code
+   450                                  theEnd:
+   451                                          ;;;;;;  Kill the child process
+   452 000000FA B825000000                      mov     eax,37
+   453 000000FF 8B1D[00040000]                  mov     ebx,[childPID]
+   454 00000105 B909000000                      mov     ecx,9  ; kill signal
+   455 0000010A CD80                            int     80h
+   456                                          NormalTermination
+   457 0000010C B801000000          <1>  mov eax, 1
+   458 00000111 BB00000000          <1>  mov ebx, 0
+   459 00000116 CD80                <1>  int 80h
+   460                                  
+   461                                  
+   462                                  ;;;  GetCode - reads file to see what to do - no args passed in, returns char in AL
+   463                                  _getCode:
+   464                                          OpenFile 0  ; readonly
+   465 00000118 60                  <1>  pusha
+   466 00000119 B805000000          <1>  mov eax,5
+   467 0000011E BB[52080000]        <1>  mov ebx,fileName
+   468 00000123 B900000000          <1>  mov ecx,%1
+   469 00000128 CD80                <1>  int 80h
+   470 0000012A A3[5F080000]        <1>  mov [fileDescriptor],eax
+   471 0000012F 61                  <1>  popa
+   472                                          ReadFile        fileDescriptor, inputBuffer, 2
+   473 00000130 60                  <1>  pusha
+   474 00000131 B803000000          <1>  mov eax,3
+   475 00000136 8B1D[5F080000]      <1>  mov ebx,[%1]
+   476 0000013C B9[00000000]        <1>  mov ecx,%2
+   477 00000141 BA02000000          <1>  mov edx,%3
+   478 00000146 CD80                <1>  int 80h
+   479 00000148 61                  <1>  popa
+   480                                          CloseFile
+   481 00000149 60                  <1>  pusha
+   482 0000014A B806000000          <1>  mov eax,6
+   483 0000014F 8B1D[5F080000]      <1>  mov ebx,[fileDescriptor]
+   484 00000155 CD80                <1>  int 80h
+   485 00000157 61                  <1>  popa
+   486 00000158 A0[00000000]                    mov     al, BYTE [inputBuffer]
+   487 0000015D C3                              ret
+   488                                  
+   489                                  
+   490                                  
+   491                                  ;;; Sleep function - sleeps for one second
+   492                                  _sleep1:
+   493 0000015E 60                              pusha
+   494                                  
+   495 0000015F B804000000                      mov     eax,4
+   496 00000164 BB01000000                      mov     ebx,1
+   497 00000169 B9[49080000]                    mov     ecx,sleeping
+   498 0000016E BA01000000                      mov     edx,1
+   499 00000173 CD80                            int     80h
+   500                                  
+   501 00000175 B8A2000000                      mov     eax,162
+   502 0000017A BB[4A080000]                    mov     ebx,sec
+   503 0000017F B900000000                      mov     ecx,0
+   504 00000184 CD80                            int     80h
+   505 00000186 61                              popa
+   506 00000187 C3                              ret
+   507                                  
+   508                                  movePython:
+   509 00000188 60                      	pusha
+   510                                  
+   511 00000189 3C77                    	cmp al, 'w'
+   512 0000018B 7419                    	je north
+   513 0000018D 3C61                    	cmp al, 'a'
+   514 0000018F 746C                    	je west
+   515 00000191 3C73                    	cmp al, 's'
+   516 00000193 0F84BB000000            	je south
+   517 00000199 3C64                    	cmp al, 'd'
+   518 0000019B 0F8407010000            	je east
+   519 000001A1 E956010000              	jmp en
+   520                                  
+   521                                  	north:
+   522                                  		; Get the row and column of the Python pattern
+   523 000001A6 A1[02000000]                		mov eax, [python + py.row]
+   524 000001AB 8B1D[05000000]              		mov ebx, [python + py.col]
+   525                                  
+   526                                      		; Decrement the row of the Python pattern
+   527 000001B1 8B0D[02000000]              		mov ecx, [python + py.row]
+   528 000001B7 49                          		dec ecx
+   529 000001B8 890D[02000000]              		mov [python + py.row], ecx
+   530                                  
+   531                                      		; Move the Python pattern upward by one line
+   532 000001BE BE[00000000]                		mov esi, python            ; Pointer to the start of the Python pattern
+   533 000001C3 83C609                      		add esi, py.size           ; Move esi to the end of the Python pattern
+   534 000001C6 B907000000              		mov ecx, 7
+   535                                      		northTop:
+   536 000001CB 83EE09                          		sub esi, py.size       ; Move esi to the start of the previous line
+   537 000001CE 8B5602                          		mov edx, [esi + py.row] ; Get the row of the current line
+   538 000001D1 8B7E05                          		mov edi, [esi + py.col] ; Get the column of the current line
+   539                                  	
+   540 000001D4 894602                          		mov [esi + py.row], eax ; Update the row with the previous row
+   541 000001D7 895E05                          		mov [esi + py.col], ebx ; Update the column with the previous column
+   542                                  
+   543 000001DA 89D0                            		mov eax, edx           ; Move the current line's row to eax
+   544 000001DC 89FB                            		mov ebx, edi           ; Move the current line's column to ebx
+   545                                  
+   546 000001DE E2EB                            		loop northTop
+   547                                  
+   548                                      		prtPython                   ; Print the updated Python pattern
+   549                              <1>  prt python, pythonSize
+   550 000001E0 60                  <2>  pusha
+   551 000001E1 B804000000          <2>  mov eax, 4
+   552 000001E6 BB01000000          <2>  mov ebx, 1
+   553 000001EB B9[00000000]        <2>  mov ecx, %1
+   554 000001F0 BA48000000          <2>  mov edx, %2
+   555 000001F5 CD80                <2>  int 80h
+   556 000001F7 61                  <2>  popa
+   557 000001F8 E9FF000000                  		jmp en                      ; Jump to the end
+   558                                  	west:
+   559                                  		; Get the row and column of the Python pattern
+   560 000001FD A1[02000000]                            mov eax, [python + py.row]
+   561 00000202 8B1D[05000000]                          mov ebx, [python + py.col]
+   562                                  
+   563                                                  ; Decrement the col of the Python pattern
+   564 00000208 8B0D[05000000]                          mov ecx, [python + py.col]
+   565 0000020E 49                                      dec ecx
+   566 0000020F 890D[05000000]                          mov [python + py.col], ecx
+   567                                  
+   568                                                  ; Move the Python pattern up by one line
+   569 00000215 BE[00000000]                            mov esi, python            ; Pointer to the start of the Python pattern
+   570 0000021A 83C609                                  add esi, py.size           ; Move esi to the end of the Python pattern
+   571 0000021D B907000000                              mov ecx, 7
+   572                                                  westTop:
+   573 00000222 83EE09                                          sub esi, py.size       ; Move esi to the start of the previous line
+   574 00000225 8B5602                                          mov edx, [esi + py.row] ; Get the row of the current line
+   575 00000228 8B7E05                                          mov edi, [esi + py.col] ; Get the column of the current line
+   576                                  
+   577 0000022B 894602                                          mov [esi + py.row], eax ; Update the row with the previous row
+   578 0000022E 895E05                                          mov [esi + py.col], ebx ; Update the column with the previous column
+   579                                  
+   580 00000231 89D0                                            mov eax, edx           ; Move the current line's row to eax
+   581 00000233 89FB                                            mov ebx, edi           ; Move the current line's column to ebx
+   582                                  
+   583 00000235 E2EB                                            loop westTop
+   584                                  
+   585                                                  prtPython                   ; Print the updated Python pattern
+   586                              <1>  prt python, pythonSize
+   587 00000237 60                  <2>  pusha
+   588 00000238 B804000000          <2>  mov eax, 4
+   589 0000023D BB01000000          <2>  mov ebx, 1
+   590 00000242 B9[00000000]        <2>  mov ecx, %1
+   591 00000247 BA48000000          <2>  mov edx, %2
+   592 0000024C CD80                <2>  int 80h
+   593 0000024E 61                  <2>  popa
+   594                                                  
+   595                                  
+   596 0000024F E9A8000000              		jmp en
+   597                                  	south:
+   598                                  		; Get the row and column of the Python pattern
+   599 00000254 A1[02000000]                            mov eax, [python + py.row]
+   600 00000259 8B1D[05000000]                          mov ebx, [python + py.col]
+   601                                  
+   602                                                  ; Increment the row of the Python pattern
+   603 0000025F 8B0D[02000000]                          mov ecx, [python + py.row]
+   604 00000265 41                                      inc ecx
+   605 00000266 890D[02000000]                          mov [python + py.row], ecx
+   606                                  
+   607                                                  ; Move the Python pattern up by one line
+   608 0000026C BE[00000000]                            mov esi, python            ; Pointer to the start of the Python pattern
+   609 00000271 83C609                                  add esi, py.size           ; Move esi to the end of the Python pattern
+   610 00000274 B907000000                              mov ecx, 7
+   611                                                  southTop:
+   612 00000279 83EE09                                          sub esi, py.size       ; Move esi to the start of the previous line
+   613 0000027C 8B5602                                          mov edx, [esi + py.row] ; Get the row of the current line
+   614 0000027F 8B7E05                                          mov edi, [esi + py.col] ; Get the column of the current line
+   615                                  
+   616 00000282 894602                                          mov [esi + py.row], eax ; Update the row with the previous row
+   617 00000285 895E05                                          mov [esi + py.col], ebx ; Update the column with the previous column
+   618                                  
+   619 00000288 89D0                                            mov eax, edx           ; Move the current line's row to eax
+   620 0000028A 89FB                                            mov ebx, edi           ; Move the current line's column to ebx
+   621                                  
+   622 0000028C E2EB                                            loop southTop
+   623                                  
+   624                                                  prtPython                   ; Print the updated Python pattern
+   625                              <1>  prt python, pythonSize
+   626 0000028E 60                  <2>  pusha
+   627 0000028F B804000000          <2>  mov eax, 4
+   628 00000294 BB01000000          <2>  mov ebx, 1
+   629 00000299 B9[00000000]        <2>  mov ecx, %1
+   630 0000029E BA48000000          <2>  mov edx, %2
+   631 000002A3 CD80                <2>  int 80h
+   632 000002A5 61                  <2>  popa
+   633                                  
+   634                                  
+   635 000002A6 EB54                    		jmp en
+   636                                  	east:
+   637                                  		; Get the row and column of the Python pattern
+   638 000002A8 A1[02000000]                            mov eax, [python + py.row]
+   639 000002AD 8B1D[05000000]                          mov ebx, [python + py.col]
+   640                                  
+   641                                                  ; Increment the col of the Python pattern
+   642 000002B3 8B0D[05000000]                          mov ecx, [python + py.col]
+   643 000002B9 41                                      inc ecx
+   644 000002BA 890D[05000000]                          mov [python + py.col], ecx
+   645                                  
+   646                                                  ; Move the Python pattern up by one line
+   647 000002C0 BE[00000000]                            mov esi, python            ; Pointer to the start of the Python pattern
+   648 000002C5 83C609                                  add esi, py.size           ; Move esi to the end of the Python pattern
+   649 000002C8 B907000000                              mov ecx, 7
+   650                                                  eastTop:
+   651 000002CD 83EE09                                          sub esi, py.size       ; Move esi to the start of the previous line
+   652 000002D0 8B5602                                          mov edx, [esi + py.row] ; Get the row of the current line
+   653 000002D3 8B7E05                                          mov edi, [esi + py.col] ; Get the column of the current line
+   654                                  
+   655 000002D6 894602                                          mov [esi + py.row], eax ; Update the row with the previous row
+   656 000002D9 895E05                                          mov [esi + py.col], ebx ; Update the column with the previous column
+   657                                  
+   658 000002DC 89D0                                            mov eax, edx           ; Move the current line's row to eax
+   659 000002DE 89FB                                            mov ebx, edi           ; Move the current line's column to ebx
+   660                                  
+   661 000002E0 E2EB                                            loop eastTop
+   662                                  
+   663                                                  prtPython                   ; Print the updated Python pattern
+   664                              <1>  prt python, pythonSize
+   665 000002E2 60                  <2>  pusha
+   666 000002E3 B804000000          <2>  mov eax, 4
+   667 000002E8 BB01000000          <2>  mov ebx, 1
+   668 000002ED B9[00000000]        <2>  mov ecx, %1
+   669 000002F2 BA48000000          <2>  mov edx, %2
+   670 000002F7 CD80                <2>  int 80h
+   671 000002F9 61                  <2>  popa
+   672                                  
+   673 000002FA EB00                    		jmp en
+   674                                  	en:
+   675 000002FC C3                      		ret

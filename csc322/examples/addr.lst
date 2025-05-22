@@ -1,0 +1,93 @@
+     1                                  ; Bob Allen
+     2                                  ; CSC 322 
+     3                                  ; Fall 2023
+     4                                  ; Playing with addressing
+     5                                  
+     6                                  SECTION .data
+     7                                  ; define data/variables here.  Think DB, DW, DD, DQ
+     8 00000000 0102030405              a1:	db	1,2,3,4,5
+     9 00000005 010002000300040005-     a2:	dw	1,2,3,4,5
+    10 0000000E 00                 
+    11                                  
+    12                                  
+    13                                  SECTION .bss
+    14                                  ; define uninitialized data here
+    15 00000000 <res 00000014>          a3:	RESD 5
+    16                                  
+    17                                  SECTION .text
+    18                                  global _main
+    19                                  _main:
+    20                                  
+    21                                  ; Let's reverse a1
+    22                                  begin:
+    23 00000000 8A25[00000000]          	mov ah,[a1]
+    24 00000006 A0[04000000]            	mov al,[a1+4]
+    25 0000000B A2[00000000]            	mov [a1],al
+    26 00000010 8825[04000000]          	mov [a1+4],ah
+    27 00000016 8A25[01000000]          	mov ah,[a1+1]
+    28 0000001C A0[03000000]            	mov al,[a1+3]
+    29 00000021 A2[01000000]            	mov [a1+1],al
+    30 00000026 8825[03000000]          	mov [a1+3],ah
+    31                                  rev1:
+    32                                  
+    33                                  ; let's reverse a2 using pointers
+    34 0000002C BB[05000000]            	mov ebx,a2	; address of a1 in ebx
+    35 00000031 668B03                  	mov ax,[ebx]
+    36 00000034 668B4B08                	mov cx,[ebx+8]
+    37 00000038 66890B                  	mov [ebx],cx
+    38 0000003B 66894308                	mov [ebx+8],ax
+    39 0000003F 83C302                  	add ebx,2	; ebx pints to second element
+    40 00000042 668B03                  	mov ax,[ebx]
+    41 00000045 668B4B04                	mov cx,[ebx+4]
+    42 00000049 66890B                  	mov [ebx],cx
+    43 0000004C 66894304                	mov [ebx+4],ax
+    44                                  rev2:
+    45                                  
+    46                                  ; let's store a2 as dd data in a3
+    47                                  ;  (convert words to dwords and store in array)
+    48                                  ;  esi and edi are dword regs used for addressing mem
+    49                                  ;  
+    50 00000050 BE[05000000]            	mov esi,a2	; source index
+    51 00000055 BF[00000000]            	mov edi,a3	; dest index
+    52 0000005A 0FBF06                  	movsx eax,WORD[esi]
+    53 0000005D 8907                    	mov [edi],eax
+    54 0000005F 83C602                  	add esi,2	; next word in array a2
+    55 00000062 83C704                  	add edi,4	; next dword in array a3
+    56 00000065 0FBF06                  	movsx eax,WORD[esi]
+    57 00000068 8907                    	mov [edi],eax
+    58 0000006A 83C602                  	add esi,2	; next word in array a2
+    59 0000006D 83C704                  	add edi,4	; next dword in array a3
+    60 00000070 0FBF06                  	movsx eax,WORD[esi]
+    61 00000073 8907                    	mov [edi],eax
+    62 00000075 83C602                  	add esi,2	; next word in array a2
+    63 00000078 83C704                  	add edi,4	; next dword in array a3
+    64 0000007B 0FBF06                  	movsx eax,WORD[esi]
+    65 0000007E 8907                    	mov [edi],eax
+    66 00000080 83C602                  	add esi,2	; next word in array a2
+    67 00000083 83C704                  	add edi,4	; next dword in array a3
+    68 00000086 0FBF06                  	movsx eax,WORD[esi]
+    69 00000089 8907                    	mov [edi],eax
+    70 0000008B 83C602                  	add esi,2	; next word in array a2
+    71 0000008E 83C704                  	add edi,4	; next dword in array a3
+    72                                  
+    73                                  lastBreak:
+    74                                  
+    75                                  
+    76                                  ; Normal termination code
+    77 00000091 B801000000              mov eax, 1
+    78 00000096 BB00000000              mov ebx, 0
+    79 0000009B CD80                    int 80h
+    80                                  
+    81                                  
+    82                                  
+    83                                  
+    84                                  
+    85                                  
+    86                                  
+    87                                  
+    88                                  
+    89                                  
+    90                                  
+    91                                  
+    92                                  
+    93                                  

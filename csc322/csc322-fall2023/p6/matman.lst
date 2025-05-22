@@ -1,0 +1,77 @@
+     1                                  ; Will King
+     2                                  ; Matrix Management
+     3                                  ; 10/19/2023
+     4                                  ROWS:  	    EQU	5	; defines a constant ROWS set to 5.
+     5                                  COLS:       EQU	7	; defines a constant COLS set to 7.
+     6                                  
+     7                                  SECTION .bss
+     8 00000000 <res 00000014>          RowSums:	RESD ROWS
+     9 00000014 <res 0000001C>          ColSums:	RESD COLS
+    10 00000030 <res 00000004>          Sum:		RESD 1
+    11 00000034 <res 00000004>          saveEcx: 	RESD 1
+    12                                  SECTION .data
+    13 00000000 010000000200000003-     MyMatrix: 	dd	 1,  2,  3,  4,  5,  6,  7
+    14 00000009 000000040000000500-
+    15 00000012 000006000000070000-
+    16 0000001B 00                 
+    17 0000001C 08000000090000000A-     	    	dd	 8,  9, 10, 11, 12, 13, 14
+    18 00000025 0000000B0000000C00-
+    19 0000002E 00000D0000000E0000-
+    20 00000037 00                 
+    21 00000038 0F0000001000000011-     		dd	15, 16, 17, 18, 19, 20, 21
+    22 00000041 000000120000001300-
+    23 0000004A 000014000000150000-
+    24 00000053 00                 
+    25 00000054 160000001700000018-     		dd	22, 23, 24, 25, 26, 27, 28
+    26 0000005D 000000190000001A00-
+    27 00000066 00001B0000001C0000-
+    28 0000006F 00                 
+    29 00000070 1D0000001E0000001F-     		dd	29, 30, 31, 32, 33, 34, 35
+    30 00000079 000000200000002100-
+    31 00000082 000022000000230000-
+    32 0000008B 00                 
+    33                                  
+    34                                  SECTION .text
+    35                                  global _main
+    36                                  _main:
+    37                                  
+    38                                  ; put your code here.
+    39 00000000 BE[00000000]            mov esi, MyMatrix
+    40 00000005 BF[00000000]            mov edi, RowSums
+    41 0000000A 31C0                    xor eax, eax
+    42 0000000C B905000000              mov ecx, ROWS
+    43                                  
+    44                                  outerRow:
+    45 00000011 890D[34000000]          	mov [saveEcx], ecx
+    46 00000017 B907000000              	mov ecx, COLS
+    47                                  innerRow:
+    48 0000001C 0306                    	add dword eax, [esi]
+    49 0000001E 83C604                  	add esi, 4 
+    50 00000021 E2F9                    loop innerRow
+    51 00000023 8907                    	mov [edi], eax
+    52 00000025 31C0                    	xor eax, eax
+    53 00000027 83C704                  	add edi, 4
+    54 0000002A 83C604                  	add esi, 4
+    55                                  
+    56 0000002D E2E2                    	loop outerRow
+    57 0000002F BE[00000000]            mov esi, MyMatrix 
+    58 00000034 BF[14000000]            mov edi, ColSums
+    59 00000039 B907000000              mov ecx, COLS
+    60                                  outerCol:
+    61 0000003E 890D[34000000]          	mov [saveEcx], ecx
+    62 00000044 B905000000              	mov ecx, ROWS
+    63                                  innerCol:
+    64 00000049 0306                    	add eax, [esi]
+    65 0000004B 83C61C                  	add esi, COLS * 4
+    66 0000004E E2F9                    loop innerCol
+    67 00000050 BE[00000000]            	mov esi, MyMatrix
+    68 00000055 46                      	inc dword esi	
+    69 00000056 8B07                    	mov eax, [edi]
+    70 00000058 83C704                  	add edi, 4
+    71 0000005B 31C0                    	xor eax, eax
+    72 0000005D E2DF                    loop outerCol
+    73                                  lastBreak:
+    74                                  ; Normal termination code
+    75 0000005F B801000000              mov eax, 1
+    76 00000064 BB00000000              mov ebx, 0
+    77 00000069 CD80                    int 80h

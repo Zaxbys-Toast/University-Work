@@ -1,0 +1,74 @@
+     1                                  ; Bob Allen
+     2                                  ; Example of recursion with Fibonacci
+     3                                  ; Fall 2023
+     4                                  
+     5                                  SECTION .data
+     6 00000000 9C000000                n:	   dd	156	;;; 47 gives our max fib for dd
+     7 00000004 00000000                theNthFib: dd	0
+     8                                  
+     9                                  SECTION .text
+    10                                  global _main, _fib
+    11                                  _main:
+    12                                  
+    13                                  ;;;;;;;;;;;;;;;;;;;  	 Parameter passing for _fib: 
+    14                                  ;;;;;;;;;;;;;;;;;;;      input: push n on stack 
+    15                                  ;;;;;;;;;;;;;;;;;;;      output: pop fib(n) off stack
+    16 00000000 FF35[00000000]          push DWORD [n]
+    17 00000006 E812000000              call _fib
+    18 0000000B 8F05[04000000]          pop  DWORD [theNthFib]
+    19                                  
+    20                                  lastBreak:
+    21                                  
+    22                                  
+    23                                  ; Normal termination code
+    24 00000011 B801000000              mov eax, 1
+    25 00000016 BB00000000              mov ebx, 0
+    26 0000001B CD80                    int 80h
+    27                                  
+    28                                  
+    29                                  ;;;;;;;;;;;;;;;;; Fib ;;;;;;;;;;;;;;;;;;;
+    30                                  ;;;;;;;;;;;;;      input: n was pushed on stack 
+    31                                  ;;;;;;;            output: fib(n) replaced on stack
+    32                                  ;;;;;;;	           (i.e. replaces n with Fib(n))
+    33                                  
+    34                                  _fib:
+    35 0000001D 53                      	push ebx  ;; Save because we use within
+    36 0000001E 51                      	push ecx  ;; Save because we use within
+    37                                  
+    38 0000001F 8B5C240C                	mov  ebx,[esp+12] ; get N: skip ecx, ebc, ret addr
+    39 00000023 83FB01                  	cmp  ebx,1
+    40 00000026 7616                    	jbe  stopRecur  ;;;;;; Fib(1) is 1 and Fib(0) is 0
+    41                                  	;;;;;; the recursive calls
+    42 00000028 4B                      	dec  ebx 	;;; N-1
+    43 00000029 53                      	push ebx
+    44 0000002A E8EEFFFFFF              	call _fib	;;; fib(N-1)
+    45 0000002F 59                      	pop  ecx	;;; hold fib(n-1) to add to fib(n-2)
+    46                                  
+    47 00000030 4B                      	dec  ebx	;;; N-2
+    48 00000031 53                      	push ebx
+    49 00000032 E8E6FFFFFF              	call _fib	;;; fib(N-2)
+    50 00000037 5B                      	pop  ebx
+    51 00000038 01CB                    	add  ebx,ecx	;;; fib(n-1) + fib(n-2)
+    52 0000003A 895C240C                	mov  DWORD [esp+12],ebx  ;;;  Replace N with fib(N) on stack 
+    53                                  stopRecur:
+    54 0000003E 59                      	pop ecx  ;; Restore original value
+    55 0000003F 5B                      	pop ebx  ;; Restore original value
+    56 00000040 C3                      	ret
+    57                                  
+    58                                  
+    59                                  
+    60                                  
+    61                                  
+    62                                  
+    63                                  
+    64                                  
+    65                                  
+    66                                  
+    67                                  
+    68                                  
+    69                                  
+    70                                  
+    71                                  
+    72                                  
+    73                                  
+    74                                  

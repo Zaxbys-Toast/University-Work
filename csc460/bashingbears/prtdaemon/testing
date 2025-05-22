@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Compile all programs
+cc -o daemon daemon.c
+cc -o user user.c
+cc -o stop stop.c
+
+# Start the daemon with buffer size 5
+./daemon 5 &
+sleep 1  # Give daemon time to start
+
+# Start three users
+./user &
+./user &
+./user &
+
+# Wait for a bit
+sleep 10
+
+# Start two more users
+./user &
+./user &
+
+# Wait for all users to finish
+sleep 30
+
+# Stop the daemon
+./stop
+
+# Clean up compiled programs
+rm daemon user stop

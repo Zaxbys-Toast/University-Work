@@ -1,0 +1,25 @@
+     1                                  ; Console Output
+     2                                  ; Materials - NASM (32-bit)
+     3                                  ; Copyright (c) 2017 Hall & Slonka
+     4                                  
+     5                                  ; Uses system call information from Chapter 10
+     6                                  
+     7                                  SECTION .data
+     8 00000000 48656C6C6F20556E69-     s1: DB "Hello Universe", 10, 0
+     9 00000009 76657273650A00     
+    10                                  lenS1: EQU ($ - s1)
+    11                                  
+    12                                  SECTION .text
+    13                                  global _main
+    14                                  _main:
+    15                                  
+    16 00000000 B804000000              print:  mov eax, 4     ; syswrite
+    17 00000005 BB01000000              	mov ebx, 1     ; stdout
+    18 0000000A B9[00000000]            	mov ecx, s1    ; starting address of string
+    19 0000000F BA10000000              	mov edx, lenS1 ; len of string
+    20 00000014 CD80                    	int 80h
+    21                                  
+    22                                  done:	
+    23 00000016 B801000000              mov eax, 1
+    24 0000001B BB00000000              mov ebx, 0
+    25 00000020 CD80                    int 80h

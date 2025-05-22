@@ -1,0 +1,18 @@
+     1                                  ; Program 3.1
+     2                                  ; Sample Assembly Program - NASM (32-bit)
+     3                                  ; Copyright (c) 2017 Hall & Slonka
+     4                                  
+     5                                  SECTION .data
+     6 00000000 00000000                sum: DD 0
+     7                                  
+     8                                  SECTION .text
+     9                                  global _main
+    10                                  _main:
+    11 00000000 B819000000              mov eax, 25
+    12 00000005 BB32000000              mov ebx, 50
+    13 0000000A 01D8                    add eax, ebx
+    14 0000000C A3[00000000]            mov DWORD [sum], eax
+    15                                  
+    16 00000011 B801000000              mov eax, 1
+    17 00000016 BB00000000              mov ebx, 0
+    18 0000001B CD80                    int 80h

@@ -1,0 +1,69 @@
+     1                                  ; Will King
+     2                                  ; Prog 3
+     3                                  ; CSC322 9/29/2023
+     4                                  ; Summing all of the values in each array and then summing those totals
+     5                                  
+     6                                  SECTION .data
+     7                                  ; define data/variables here.  Think DB, DW, DD, DQ
+     8 00000000 01FE03FC05              bArray:	DB	1,-2,3,-4,5
+     9 00000005 6400C8002C019001F4-     wArray: DW	100,200,300,400,500
+    10 0000000E 01                 
+    11 0000000F BEFEFFFFDEFCFFFF2E-     dArray: DD	-322,-322h,-322q,-1833,-1833h
+    12 00000018 FFFFFFD7F8FFFFCDE7-
+    13 00000021 FFFF               
+    14 00000023 00                      bArraySum: DB	0
+    15 00000024 0000                    wArraySum: DW	0
+    16 00000026 00000000                dArraySum: DD	0
+    17 0000002A 00000000                grandTotal: DD	0
+    18                                  SECTION .bss
+    19                                  ; define uninitialized data here
+    20                                  
+    21                                  SECTION .text
+    22                                  global _main
+    23                                  _main:
+    24                                  
+    25                                  ; put your code here.
+    26 00000000 660FBE05[00000000]      movsx ax, byte [bArray]
+    27 00000008 660FBE1D[01000000]      movsx bx, byte [bArray + 1]
+    28 00000010 6601D8                  add ax, bx
+    29 00000013 660105[23000000]        add [bArraySum], ax
+    30 0000001A 660FBE05[02000000]      movsx ax, byte [bArray + 2]
+    31 00000022 660FBE1D[03000000]      movsx bx, byte [bArray + 3]
+    32 0000002A 6601D8                  add ax, bx
+    33 0000002D 660105[23000000]        add [bArraySum], ax
+    34 00000034 66A1[04000000]          mov ax, [bArray + 4]
+    35 0000003A 66011D[23000000]        add [bArraySum], bx
+    36                                  
+    37 00000041 0FBF05[05000000]        movsx eax, word [wArray]
+    38 00000048 0FBF1D[06000000]        movsx ebx, word [wArray + 1]
+    39 0000004F 01D8                    add eax, ebx
+    40 00000051 0105[24000000]          add [wArraySum], eax
+    41 00000057 0FBF05[07000000]        movsx eax, word [wArray + 2]
+    42 0000005E 0FBF1D[08000000]        movsx ebx, word [wArray + 3]
+    43 00000065 01D8                    add eax, ebx
+    44 00000067 0105[24000000]          add [wArraySum], eax
+    45 0000006D 0FBF05[09000000]        movsx eax, word [wArray + 4]
+    46 00000074 0105[24000000]          add [wArraySum], eax
+    47                                  
+    48 0000007A A1[0F000000]            mov eax, dword [dArray]
+    49 0000007F 8B1D[10000000]          mov ebx, dword [dArray + 1]
+    50 00000085 8B0D[11000000]          mov ecx, dword [dArray + 2]
+    51 0000008B 8B15[12000000]          mov edx, dword [dArray + 3]
+    52 00000091 0105[26000000]          add [dArraySum], eax
+    53 00000097 011D[26000000]          add [dArraySum], ebx
+    54 0000009D 010D[26000000]          add [dArraySum], ecx
+    55 000000A3 0115[26000000]          add [dArraySum], edx
+    56 000000A9 A1[13000000]            mov eax, dword [dArray + 4]
+    57 000000AE 0105[26000000]          add [dArraySum], eax
+    58                                  
+    59 000000B4 A1[26000000]            mov eax, [dArraySum]
+    60 000000B9 8B1D[24000000]          mov ebx, [wArraySum]
+    61 000000BF 668B0D[23000000]        mov cx, [bArraySum]
+    62 000000C6 0105[2A000000]          add [grandTotal], eax
+    63 000000CC 011D[2A000000]          add [grandTotal], ebx
+    64 000000D2 66010D[2A000000]        add [grandTotal], cx
+    65                                  lastBreak:
+    66                                  ; Normal termination code
+    67 000000D9 B801000000              mov eax, 1
+    68 000000DE BB00000000              mov ebx, 0
+    69 000000E3 CD80                    int 80h

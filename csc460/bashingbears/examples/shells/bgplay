@@ -1,0 +1,8 @@
+#!/bin/bash
+# bgplay
+# testing out the "&" operator  
+# for running in the background
+
+forex 1 2 3 4 5 &
+forex one two three four five &
+forex apple banana orange grape peach &
