@@ -1,0 +1,18 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: lightgrey;
+}
+
+h3 {
+  padding: 0px 12px;
+  text-align: center;
+}
+
+p {
+  padding: 0px 12px;
+  text-align: center;
+}
+body, html {
+  margin: 0;
+  padding: 0;
+}

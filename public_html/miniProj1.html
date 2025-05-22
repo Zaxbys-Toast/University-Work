@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="mulan/css/home.css">
+  <link rel="stylesheet" href="mulan/css/navbar.css">
+</head>
+<body>
+    <!-- Start of Code for the Nav bar -->
+    <div class="navbar">
+        <a href="#">Home</a>
+        <div class="dropdown">
+             <button class="dropbtn">
+                  Table of Contents
+                  <i class="fa fa-caret-down"></i>
+             </button>
+             <div class="dropdown-content">
+                <a href="mulan/html/ToC.html">All Lessons</a>
+                <a href="mulan/lessons/lesson1.html">Lesson 1</a>
+                <a href="mulan/lessons/lesson2.html">Lesson 2</a>
+                <a href="mulan/lessons/lesson3.html">Lesson 3</a>
+             </div>
+        </div>
+        <div class="navbar-title">Learn Chinese with Mulan</div>
+    </div>
+<!-- End of Code for Nav Bar -->
+
+    <div id="home"></div> 
+<script>
+ /* Load the main title */
+    $(document).ready(function() {
+      $("#home").load("mulan/html/homepage.html")
+    });
+</script>
+</body>
+</html>

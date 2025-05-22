@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innovative Applications</title>
+  <link rel="stylesheet" href="websites/C4iA/css/chevron.css">
+  <link rel="stylesheet" href="websites/C4iA/css/title.css">
+  <link rel="stylesheet" href="websites/C4iA/css/cards.css">
+  <link rel="stylesheet" href="websites/C4iA/css/main.css">
+  <link rel="stylesheet" href="websites/C4iA/css/overview.css">
+  <link rel="stylesheet" href="websites/C4iA/css/contacts.css">
+</head>
+<body>
+
+  <div id="header-placeholder"></div> <!-- Header will be loaded here -->
+  <div id="title"></div> <!-- Title will be loaded here -->
+  <div id="cards"></div> <!-- Cards will be loaded here -->	
+  <div id="overview"></div>
+  <div id="contacts"></div>
+  <script>
+    /* Load the header*/
+    $(document).ready(function() {
+      $("#header-placeholder").load("websites/C4iA/includes/chevron.html", function() {
+        $.getScript("websites/C4iA/js/chevron.js"); // Ensures chevron.js loads after header
+      });
+    });
+
+    /* Load the main title */
+    $(document).ready(function() {
+      $("#title").load("websites/C4iA/includes/title.html")
+    });
+  
+    /* Load the cards */
+    $(document).ready(function() {
+      $("#cards").load("websites/C4iA/includes/cards.html")
+    });
+
+    /* Load the overview */
+    $(document).ready(function() {
+      $("#overview").load("websites/C4iA/includes/overview.html")
+    }); 
+
+    /* Load the overview */
+    $(document).ready(function() {
+      $("#contacts").load("websites/C4iA/includes/contacts.html")
+    }); 
+  </script>
+</body>
+</html>
