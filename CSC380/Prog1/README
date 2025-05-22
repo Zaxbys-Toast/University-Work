@@ -1,0 +1,12 @@
+Algorithm:
+    1) Check each possible move to see if it is in the unsafe file. 
+        If there is no safe move take as many chips as possible from
+        any of the piles
+    2) When a lose state or an unsafe state has been reached, record the previous board state
+        and its combinations to the unsafe file. 
+    3) Repeat this over and over again
+
+Problems:
+    The problems with my algorithm are fairly apparent. It is very inefficient, creating a very long
+    unsafe file. Additionally, it does not account for anything past the nine combinations before it lost
+    In order to make it better I would definitely make sure it isn't inserting any repeat values, which I think it is right now, and I would try to make it look two steps back when it is learning instead of just one step back. This would help it learn faster as to what states it should avoid.

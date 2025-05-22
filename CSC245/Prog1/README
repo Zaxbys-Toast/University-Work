@@ -1,0 +1,35 @@
+1.	NodeType head: This is a private attribute as the client should not be able to change where the head of the linked list is, making it something that isn;t the first 
+			item in the list.
+	int length: This is a private attribute so that the length of the linked list cannot be chagne by the client as it is used by operations in dlist.cpp that won't work
+			if it is edited.
+	templates: Templates are being used so that any data type may be used to create a linked list. Otherwise linked lists will only be created
+			with a set data type, such as int. This allows any type of list to be created, with chars strings etc.
+	Public operations: These operations are able to be used in the client file as they do not freely edit private attributes that allow the dlist to operate
+				They include all of the operations but deleteLocation, last, and location. deleteLocation is not included as the client should not have
+				to deal with specific addresses anytime they want to delete something and can instead just use the deleteItem operation which finds the 
+				addres of the variable for them. The last and loaction operations is not public because they only operate within the operations used in dlist. 
+
+2.	Constructor and Destructor: These create and delete a new doubly linked list with a set ItemType
+	insertHead: This inserts an item into the front of the list
+	appendTail: This adds an item on to the end of the list
+	deleteLocation: This deletes an item at a certain loaction within the linked list. It contains special cases to deal with deleting the first item in a list,
+			if there is only one item in a list and if you are deleting the last item in a list
+	deleteItem: This uses deleteLocation by passing in the location of a specific item in the linked list
+	location: This returns the address of a specific item in the linked list
+	makeEmpty: This deletes all items in the linked list 
+	inList: This is a bool that returns whether or not a searched item is in the list
+	isEmpty: This is a bool that returns whether or not the list is empty
+	print: This traverses the linked list and prints out each of the info sections of the nodes in a way that is easy to read for a user
+	lengthIs: This returns the private length variable from dlist.h
+	last: This returns the address of the last item in the linked list by traversing until the next pointer is null
+	
+
+3.
+	The role of the move to the front algorithm is to make sure that the most used items in a linked list are the ones that will appear earliest in the list
+		so that they are the easiest to access, saving searching time
+
+4.
+	The algorithm followed by the client program essentially just uses all of the methods made in the DList class in order to carry out the functions of the 
+		move to front algorithm. In order to move items to the front of the list when they are accessed it creates a temp variable containing the information
+		deletes the original node and then inserts the temp value at the front of the list. It also makes sure that there are no duplicate integers that are 
+		inserted into the list and can print the full list and the length of the list.

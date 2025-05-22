@@ -1,0 +1,28 @@
+Problem Description: 
+	We need to build a data base that contains employee data. This will need to be able to add new employees, change pay, upload and download data to a file, 
+	and print all of the employees out.
+
+Solution:
+	We will have a total of four classes:
+		1. Employee
+			-This will be an abstract class that sets up the other two employee classes
+			-It will contain methods to make a new employee, a method to increase the pay of all employees, pad strings (for formatting), and getter/setter
+			 methods for a String name and a double wage
+			-The abstract method will be the compute pay method as it will be different in each employee class
+		2. SalariedEmployee
+			-This will contain a constructor that uses super, a toString method that will print out the yearly salary and name in format
+		3. HourlyEmployee
+			-This will contain a constructor that uses sper, a toString method that will print out the hourly pay and name in format
+		4. Personnel
+			-This class will be the main program. It wil have methods to print all employees, create new employees of differnt types, format the wages so they
+			look right, increase pay for all employees, a menu method to print the options menu, methods to upload and download from a file, and a method to
+			compute and print paychecks based on wage.
+			-The data that will be uploaded and downloaded will be of the Employee type. This will allow for employee data to be stored after the program exits.
+			-The employee ArrayList will be declared globally in order to simplify some calls in methods
+
+
+
+
+
+
+

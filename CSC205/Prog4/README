@@ -1,0 +1,24 @@
+Analysis:
+
+	The problem to be solved in this program is simulationg a queue for cpu jobs and the time that it takes to complete
+	and move through them. To start off I will need to finish the queue class with an enqueue and dequeue method. The
+	enqueue method will make the current lastNode point to the new node and then make the new node the last node pointing 	      to the first node. The dequeue method will take the item from the first node and put it in a temp object which will be	    returned while the last node will now point to the second node. The next step will be creating the driver file which
+	will give a detailed run down of the jobs that are happening. To do this I will make a few methods, the run method 
+	which will contain most of the heavy work, the menu method which will just have the title, and the input method which 	      will input given values from a file into a queue. The run method will print everything, figure out how much time 
+	passes, figure out the percentages, idle times, average wait time, and more. 
+
+Example:
+
+	job1	01	05
+	job2	03	03
+	job3	04	01
+	job4	07	04
+	job5 	14	01
+
+
+job1 will come in as the clock starts. It will take the CPU 5 ticks to process which will make the run time 5. job2 will come in at 3, however since the first job won;t be done until 5 it will have to wait for 2. This will make the counter for the 
+overall waitTime go up by 2. It runs for 3 meaning it will end at 8. Now job3 comes in at 4. It has a wait time of 4 and runs for 1 making the clock at 9. Job4 enters at 7 which makes the wait time 2. The run time is 4 setting the clock at 13. The
+final job comes in at 14, making the wait time 0 and lasts for one setting the final clock time to 15. Since there was 1 
+in between the last two jobs there is an idle time of 1. So, the average wait time will be calculated by adding all of the 
+wait times and then dividing by 5, the CPU usage will be found by adding all of the run times, the CPU idle will be found by
+adding all of the idle times together, and finally the cpu usage percentage will be found by dividing the cpu usage by the cpuusage added to the idle time (which gives the total time) and then multiplying by 100 to make it a percentage.

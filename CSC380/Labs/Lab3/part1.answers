@@ -1,0 +1,10 @@
+a)It's being implemented as an array of strings 
+
+b)Protected is used so that the attributes can be accessed by classes that extend it.
+
+c)When c = 9/when all of the slots are filled
+
+d)The function goes through a square, then recursively calls the function on the next square until it is finished. This works well for 
+a puzzle of this size but won't be super fast on a larger puzzle.
+
+e)This nueral network was made using recursion that sends and recieves messages saying what they are so others can't be them and was trained on 260,000 data sets

@@ -1,0 +1,19 @@
+### Methods ###
+
+* Need a mtehod for breaking apart the string into tokens
+## Did not need this
+* Need a method for then taking these tokens and removing any "stop" words
+## Did not need this, just used parsing looking for phrases
+* Need a method for analyzing the words left and determining the response based on some sort of hierarchy
+## Did do this, ended up having negative emotions be the highest on the list
+* A method for getting input might be usefull due to the "- " before each input
+## python actually handles this really well on its own using input("- ")
+* addKeyword - adds keywords to the dialog object
+## Used this. Ended up combining the functions of add response with this as it made handling which responses go to which keyword much easier. Essentially,
+# add a keyword to an array which references a list of responses. All the keyword does is act as a location
+*addResponse - adds responses to corresponding keywords
+## Did not use this
+* getResponse - acquires the response based on the text
+## Implemented this through parsing through the input text. If the text contains a keyword/phrase it generates a random response from the array/list and returns that.
+# It does not continue going through the text. In the client file there is some handling done for emotions so that the emotion will be added to the end of the sentence
+

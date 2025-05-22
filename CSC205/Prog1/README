@@ -1,0 +1,48 @@
+Analysis:
+	The problem at hand is making a program which can fill a 5x5 array with values from a file (bingo.in). The program
+	should then be able to generrate random numbers 1-75 to "play" bingo. A couple immediate issues are making sure that
+        numbers aren't duplicated and how to mark them off on the card. Next the program should be able to tell the user which
+	numbers were chosen in order, and how many numbers it took to get to a win. Another issue lies in figuring out how to 
+	determine how the card won. I'm thinking of using an integer that can represent the different types of wins. Finally
+	formatting will be an issue, but I plan to solve that with trial and error. 
+
+Marking a Card and Checking for Duplicates:
+	In order to mark a card I am going to first generate a random number using the Math class. Then I will do a search
+        through the 2d array full of the values from the bingo.in file, and if the number is in the array I will set that
+  	number equal to zero. In order to avoid repeat numbers I will use a BitSet that will hold numbers 0-75 and when the
+	 number is called it will be set to true in the BitSet. If the number is already set to true then a new random number
+	will be generated. This will all be contained in the genNum method. To then mark the card, in my printCard method, I
+        will use an if statement that changes any 0's it finds into X's.
+
+Checking for a Winning Card:
+	This will be part of a different "set" of methods. First of all I am going to make several methods that sum vertical
+	colums, rows, and the diagonal portions of the card (I had trouble getting the diagonal methods to work properly so
+	they were included in the checkForWin method). Since chosen numbers are set to 0 if any of these return a 0 this will
+	mean that the card has won. To determine what kind of win the card has gotten I will create an int winType that will be
+	used in a switch statement, where 1 means it is a horizontal win, 2 means it is a vetical win, and 3 means it is a 
+        diagonal win. 
+
+Methods:
+	fillCard: uses a scanner to take int values from the file and then place them in the bingo card. non-value returning.
+
+	printCard: use two for loops to traverse the bingo card array while printing the values. Also prints the header and 
+		   all of the lines. non-value returning.
+ 
+	playGame: uses the next methods in order to actually "play" the game and determines what type of win occurred. non-value returning.
+
+	numGen: Generates random numbers that are checked against a Bitset. If the index in the BitSet is false set it to true.
+		If the index was already true then generate a new number. Traverse the bingo card array to check for these values
+		and change that index to 0 if it is found. Also print out all of the numbers it is choosing as it goes so I don't
+		need to make another array. Is not value returning.
+
+	checkWin: Checks the rows, columns, and diagonals to see if their sum is 0. If one of them does have a sum of 0 then an
+		  int winType is assigned a number based on what type of win it is. returns int.
+
+	sumHorizontal: Uses a for loop to sum the horizontal rows. Will be called in checkWin. Returns int.
+
+	sumVertical: Uses a for loop to sum the vertical columns. Will be called in checkWin. Returns int.
+
+		
+
+
+   

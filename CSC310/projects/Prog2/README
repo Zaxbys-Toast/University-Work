@@ -1,0 +1,14 @@
+------------------
+File Class Plans
+------------------
+So for my -cf and -xf options I plan on including a header that will be created using the 
+file class. The get functions will allow me to parse through each of the files in a directory
+or each file provided and create file objects with them. This means that while I am going through
+and adding each file to the tar file I can just print out all of its data based on the object.
+For the -cf option I plan to make it so that it passes through, creating all of the file objects,
+then another function can be called with file.getName() as the parameter that returns a string with
+all of that data, and then the file information followed by its data is printed into the tar file.
+Similarly with the -xf option I plan on using these headers to extract all of the information I need
+and then write a certain amount of bits out to a file based on the size of the file specified in the 
+header. This will then put me at the beginning of the next file header.
+

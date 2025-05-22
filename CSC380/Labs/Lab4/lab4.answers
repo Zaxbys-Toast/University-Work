@@ -1,0 +1,18 @@
+I. Prolog - Programming in logic 
+
+   Facts in prolog - sunny. father(john, mary). mother(susan, peter).
+   
+
+II. yes
+    yes
+    X = david ? no
+    X = Jack Y = Peter ? yes
+
+
+III.
+	is_in_room(Class, wsc100). Class = 480 ? Yes - CSC480 is in wsc100 
+	is_in_class(toby, Class). Class = 380 ? Yes - Toby is in csc380
+	is_hot(Person). Person = Will ? Yes - Will is in csc380 and it is hot in csc380
+	The original version is much more readable but they function in the same way
+
+

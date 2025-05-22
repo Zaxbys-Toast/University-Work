@@ -1,0 +1,490 @@
+Script started on 2025-03-18 20:41:17-04:00
+]0;king_jw@cobra:~/CSC310/projects/Prog208:41 PM > ct[Kat jtar.cpp
+#include <fstream>
+#include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <utime.h>
+#include <dirent.h>
+#include <cstring>
+#include <vector>
+#include <iomanip>
+#include <sstream>
+#include <cstdint>  // Include for uint64_t and uint32_t
+#include "file.h"
+
+using namespace std;
+
+File getFile(const char* filepath);
+bool isDirectory(const char* path);
+void printFile(const File &file);
+vector<File> processDirectory(const char * dirPath);
+string readFileToString(const File &file);
+void writeStringToFile(const string& filePath, const File& file, const string& data);
+void printHelp();
+void createTar(const string& tarFile, const vector<string>& filePaths);
+void listTarContents(const string& tarFile);
+void extractTar(const string& tarFile);
+void ensureDirectoryExists(const string& filePath);
+bool isValidFilePath(const string& filePath);
+string trimFileName(const char* name, size_t length);
+string formatTimestamp(time_t time);
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        cerr << "Usage: jtar -cf|-tf|-xf|--help <tarfile> [files...]" << endl;
+        return 1;
+    }
+
+    string mode = argv[1];
+
+    if (mode == "--help") {
+        printHelp();
+        return 0;
+    }
+    else if ((mode == "-cf" || mode == "-xf" || mode == "-tf") && argc < 3) {
+        cerr << "Error: Missing tarfile argument." << endl;
+        return 1;
+    }
+
+    string tarFile = argv[2];
+
+    if (mode == "-cf") {
+        vector<string> files;
+        for (int i = 3; i < argc; i++) {
+            files.push_back(argv[i]);
+        }
+        createTar(tarFile, files);
+    }
+    else if (mode == "-tf") {
+        listTarContents(tarFile);
+    }
+    else if (mode == "-xf") {
+        extractTar(tarFile);
+    }
+    else {
+        cerr << "Error: Unknown option '" << mode << "'." << endl;
+        return 1;
+    }
+
+    return 0;
+}
+
+File getFile(const char* filepath) {
+    struct stat buf;
+    if (lstat(filepath, &buf) != 0) {
+        cerr << "Error: Cannot access '" << filepath << "': " << strerror(errno) << endl;
+    }
+
+    char name[80];
+    strncpy(name, filepath, 79);
+    name[79] = '\0';  // Ensure null-termination
+
+    char pmode[5];
+    snprintf(pmode, sizeof(pmode), "%04o", buf.st_mode & 0777);
+
+    char size[7];
+    snprintf(size, sizeof(size), "%06ld", buf.st_size);
+
+    string stamp = formatTimestamp(buf.st_mtime);
+
+    return File(name, pmode, size, stamp.c_str());  // Convert stamp to const char*
+}
+
+bool isDirectory(const char* path) {
+    struct stat buf;
+    if (stat(path, &buf) != 0) {
+        cerr << "Error: Cannot access '" << path << "': " << strerror(errno) << endl;
+        return false;
+    }
+    return S_ISDIR(buf.st_mode);
+}
+
+void printFile(const File &file) {
+    cout << "Name: " << file.getName() << ", ";
+    cout << "Protection: " << file.getPmode() << ", ";
+    cout << "Size: " << file.getSize() << ", ";
+    cout << "Timestamp: " << file.getStamp() << ", ";
+    cout << "Is Directory: " << (file.isADir() ? "Yes" : "No") << endl;
+}
+
+vector<File> processDirectory(const char * dirPath) {
+    vector<File> files;
+    DIR* dir = opendir(dirPath);
+    if (!dir) {
+        cerr << "Error: cannot open directory " << dirPath << endl;
+        return files;
+    }
+
+    dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        char fullPath[1024];
+        snprintf(fullPath, sizeof(fullPath), "%s/%s", dirPath, entry->d_name);
+
+        File file = getFile(fullPath);
+        if (isDirectory(fullPath)) {
+            file.flagAsDir();
+            files.push_back(file);
+            vector<File> subdirFiles = processDirectory(fullPath);
+            files.insert(files.end(), subdirFiles.begin(), subdirFiles.end());
+        } else {
+            files.push_back(file);
+        }
+    }
+    closedir(dir);
+    return files;
+}
+
+string readFileToString(const File& file) {
+    if (file.isADir()) {
+        throw runtime_error("Cannot read directory: " + file.getName());
+    }
+
+    ifstream inputFile(file.getName(), ios::binary);
+    if (!inputFile) {
+        throw runtime_error("Failed to open file: " + file.getName());
+    }
+
+    return string((istreambuf_iterator<char>(inputFile)), istreambuf_iterator<char>());
+}
+
+void writeStringToFile(const string& filePath, const File& file, const string& data) {
+    ofstream outputFile(filePath, ios::binary | ios::app);
+    if (!outputFile) {
+        throw runtime_error("Failed to open file for writing: " + filePath);
+    }
+
+    char name[80] = {0};  // Ensure fixed 80-byte name field
+    string fileName = file.getName();
+    if (fileName.size() >= 80) {
+        fileName = fileName.substr(0, 79);  // Truncate if necessary
+    }
+    strncpy(name, fileName.c_str(), sizeof(name) - 1);
+
+    string size = file.getSize();  // Ensure 6-byte size field
+    string pmode = file.getPmode();  // Ensure 4-byte protection mode (octal)
+    string timestamp = file.getStamp(); // Ensure 15-byte timestamp
+
+    // Write fixed-size header
+    outputFile.write(name, 80);  // File name (80 bytes)
+    outputFile.write(pmode.c_str(), 4);  // Protection mode (4 bytes)
+    outputFile.write(size.c_str(), 6);  // File size (6 bytes)
+    outputFile.write(timestamp.c_str(), 15);  // Timestamp (15 bytes)
+    outputFile.write(data.c_str(), data.size());  // Write file data
+}
+
+void printHelp() {
+    cout << "jtar saves many files together into a single tape or disk archive, and\n"
+         << "can restore individual files from the archive.\n\n"
+         << "Usage: jtar [OPTION]... [FILE]...\n\n"
+         << "Option Examples:\n"
+         << "  jtar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.\n"
+         << "  jtar -tf archive.tar          # List all files in archive.tar verbosely.\n"
+         << "  jtar -xf archive.tar          # Extract all files from archive.tar.\n";
+}
+void createTar(const string& tarFile, const vector<string>& filePaths) {
+    ofstream output(tarFile, ios::binary);
+    if (!output) {
+        cerr << "Error: Cannot open tar file for writing." << endl;
+        return;
+    }
+
+    for (const string& path : filePaths) {
+        if (isDirectory(path.c_str())) {
+            vector<File> files = processDirectory(path.c_str());
+            for (const File& file : files) {
+                printFile(file);
+
+                if (!file.isADir()) {
+                    string data = readFileToString(file);
+                    writeStringToFile(tarFile, file, data);
+                }
+            }
+        } else {
+            File file = getFile(path.c_str());
+            string data = readFileToString(file);
+            writeStringToFile(tarFile, file, data);
+        }
+    }
+
+    output.close();
+    cout << "Tar file created: " << tarFile << endl;
+}
+
+void listTarContents(const string& tarFile) {
+    ifstream input(tarFile, ios::binary);
+    if (!input) {
+        cerr << "Error: Cannot open tar file for reading." << endl;
+        return;
+    }
+
+    while (input) {
+        char name[80] = {0};
+        char pmode[5] = {0};
+        char size[7] = {0};
+        char timestamp[16] = {0};
+
+        input.read(name, 80);
+        input.read(pmode, 4);
+        input.read(size, 6);
+        input.read(timestamp, 15);
+
+        if (input.gcount() == 0) break; // End of file
+
+        string fileName = trimFileName(name, 80);
+        cout << fileName << endl;
+
+        try {
+            uint64_t fileSize = stoi(string(size, 6));
+            input.seekg(fileSize, ios::cur); // Skip file content
+        } catch (const invalid_argument& e) {
+            cerr << "Error: Invalid file size in tar file for " << fileName << endl;
+            break;
+        }
+    }
+
+    input.close();
+}
+
+void extractTar(const string& tarFile) {
+    ifstream input(tarFile, ios::binary);
+    if (!input) {
+        cerr << "Error: Cannot open tar file for extraction." << endl;
+        return;
+    }
+
+    while (input) {
+        char name[80] = {0};
+        char pmode[5] = {0};
+        char size[7] = {0};
+        char timestamp[16] = {0};
+
+        input.read(name, 80);
+        input.read(pmode, 4);
+        input.read(size, 6);
+        input.read(timestamp, 15);
+
+        if (input.gcount() == 0) break; // End of file
+
+        string fileName = trimFileName(name, 80);
+
+        try {
+            uint64_t fileSize = stoi(string(size, 6));
+
+            // Debug output
+            cout << "Extracting: " << fileName << " (Size: " << fileSize << " bytes)" << endl;
+
+            ensureDirectoryExists(fileName);
+
+            ofstream output(fileName, ios::binary);
+            if (!output) {
+                cerr << "Error: Cannot create file " << fileName << endl;
+                input.seekg(fileSize, ios::cur); // Skip file content
+                continue;
+            }
+
+            vector<char> fileData(fileSize);
+            input.read(fileData.data(), fileSize);
+            output.write(fileData.data(), fileSize);
+            output.close();
+
+            // Set permissions for regular files
+            struct stat fileStat;
+            if (stat(fileName.c_str(), &fileStat) == 0) {
+                if (S_ISREG(fileStat.st_mode)) {  // Check if it's a regular file
+                    if (chmod(fileName.c_str(), stoi(pmode, nullptr, 8)) != 0) {
+                        cerr << "Error: Cannot set permissions for " << fileName << ": " << strerror(errno) << endl;
+                    }
+                } else {
+                    cerr << "Warning: Skipping permission change for non-regular file: " << fileName << endl;
+                }
+            } else {
+                cerr << "Error: Cannot stat file " << fileName << ": " << strerror(errno) << endl;
+            }
+
+            // Restore timestamps
+            struct utimbuf times;
+            times.actime = stoull(timestamp);
+            times.modtime = stoull(timestamp);
+            if (utime(fileName.c_str(), &times) != 0) {
+                cerr << "Error: Cannot set timestamps for " << fileName << ": " << strerror(errno) << endl;
+            }
+        } catch (const invalid_argument& e) {
+            cerr << "Error: Invalid file size in tar file for " << fileName << endl;
+            break;
+        }
+    }
+
+    input.close();
+    cout << "Extraction complete." << endl;
+}
+
+void ensureDirectoryExists(const string& filePath) {
+    size_t pos = 0;
+    while ((pos = filePath.find('/', pos + 1)) != string::npos) {
+        string dirPath = filePath.substr(0, pos);
+        mkdir(dirPath.c_str(), 0777);  // Create directory if it doesn't exist
+    }
+}
+
+bool isValidFilePath(const string& filePath) {
+    // Check for illegal characters or path traversal
+    if (filePath.find("..") != string::npos || filePath.find("//") != string::npos) {
+        return false;
+    }
+    return true;
+}
+
+string trimFileName(const char* name, size_t length) {
+    string fileName(name, length);
+    size_t nullPos = fileName.find('\0');
+    if (nullPos != string::npos) {
+        fileName.resize(nullPos);  // Trim trailing null characters
+    }
+    return fileName;
+}
+
+string formatTimestamp(time_t time) {
+    struct tm *tm = localtime(&time);
+    char buffer[16];
+    strftime(buffer, sizeof(buffer), "%Y%m%d%H%M.%S", tm);
+    return string(buffer);
+}
+]0;king_jw@cobra:~/CSC310/projects/Prog208:41 PM > cat file.
+file.cpp  file.h    file.o    
+08:41 PM > cat file.cpp
+
+#include "file.h"
+
+bool File::isADir() const
+{
+	return ADir;
+}
+
+void File::flagAsDir()
+{
+	ADir = true;
+}
+
+int File::recordSize() const
+{
+	return (strlen(name)+strlen(pmode)+strlen(size)+strlen(stamp));
+}
+
+string File::getName() const
+{
+	return name;
+}
+
+string File::getPmode() const
+{
+	return pmode;
+}
+
+string File::getStamp() const
+{
+	return stamp;
+}
+
+string File::getSize() const
+{
+	return size;
+}
+
+File::File ()
+{
+       strcpy (name, "\0");  strcpy (pmode, "\0");
+       strcpy (size, "\0"); strcpy (stamp, "\0");
+       ADir = false;
+
+}
+
+File::File (const char myName[], const char myPmode[],
+            const char mySize[], const char myStamp[])
+{
+       strcpy (name, myName);  strcpy (pmode, myPmode);
+       strcpy (size, mySize); strcpy (stamp, myStamp);
+       ADir = false;
+}
+
+File & File::operator = (const File& otherFile)
+{
+       strcpy (name, otherFile.name);
+       strcpy (pmode, otherFile.pmode);
+       strcpy (size, otherFile.size);
+       strcpy (stamp, otherFile.stamp);
+       ADir = otherFile.ADir;
+       return *this;
+}
+       
+File::File (const File& otherFile)
+{
+       strcpy (name, otherFile.name);
+       strcpy (pmode, otherFile.pmode);
+       strcpy (size, otherFile.size);
+       strcpy (stamp, otherFile.stamp);
+       ADir = otherFile.ADir;
+}
+]0;king_jw@cobra:~/CSC310/projects/Prog208:41 PM > cat file.h
+using namespace std;
+#include <string>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+
+class File
+{
+   public :
+       File (const File& otherFile);
+       File (const char name[], const char pmode[],
+             const char size[], const char stamp[]);
+       File ();
+       File & operator = (const File& otherFile);
+       string getSize() const;
+       string getName() const;
+       string getPmode() const;
+       string getStamp() const;
+       int recordSize() const;
+       void flagAsDir();
+       bool isADir() const;
+
+   private :
+       char name[81], pmode[5], size[7], stamp[16];
+       bool ADir;
+};
+]0;king_jw@cobra:~/CSC310/projects/Prog208:41 PM > c++ file.cpp jtar.cpp
+]0;king_jw@cobra:~/CSC310/projects/Prog208:41 PM > .[Ka.out -cf exampleRun Examples/[K
+Name: Examples/rhymes, Protection: 0664, Size: 001848, Timestamp: 203801182214.07, Is Directory: No
+Name: Examples/SmallFiles, Protection: 0775, Size: 000060, Timestamp: 202503182037.16, Is Directory: Yes
+Name: Examples/SmallFiles/file1, Protection: 0664, Size: 000116, Timestamp: 203801182214.07, Is Directory: No
+Name: Examples/SmallFiles/list, Protection: 0664, Size: 000066, Timestamp: 203801182214.07, Is Directory: No
+Name: Examples/SmallFiles/file2, Protection: 0664, Size: 000139, Timestamp: 203801182214.07, Is Directory: No
+Name: Examples/SmallFiles/midnight, Protection: 0664, Size: 001342, Timestamp: 203801182214.07, Is Directory: No
+Tar file created: exampleRun
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > ls
+[0m[01;32ma.out[0m  exampleRun  [01;34mExamples[0m  file.cpp  file.h  file.o  help  [01;32mjtar[0m  jtar.cpp  test  [01;34mtesting[0m  typescript  utility.cpp
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > rm r[K-rf Examples
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > jta[K[K[Ka.out -tf exampleRun 
+Examples/rhymes
+Examples/SmallFiles/file1
+Examples/SmallFiles/list
+Examples/SmallFiles/file2
+Examples/SmallFiles/midnight
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > a.out -xf exampleRun
+Extracting: Examples/rhymes (Size: 1848 bytes)
+Extracting: Examples/SmallFiles/file1 (Size: 116 bytes)
+Extracting: Examples/SmallFiles/list (Size: 66 bytes)
+Extracting: Examples/SmallFiles/file2 (Size: 139 bytes)
+Extracting: Examples/SmallFiles/midnight (Size: 1342 bytes)
+Extraction complete.
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > ls
+[0m[01;32ma.out[0m  exampleRun  [01;34mExamples[0m  file.cpp  file.h  file.o  help  [01;32mjtar[0m  jtar.cpp  test  [01;34mtesting[0m  typescript  utility.cpp
+]0;king_jw@cobra:~/CSC310/projects/Prog208:42 PM > exit
+exit
+
+Script done on 2025-03-18 20:42:51-04:00

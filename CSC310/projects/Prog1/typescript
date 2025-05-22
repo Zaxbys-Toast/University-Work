@@ -1,0 +1,155 @@
+Script started on 2025-01-27 00:30:36-05:00
+]0;king_jw@cobra:~/CSC310/projects/Prog112:30 AM > cat update.cpp
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cstring>
+#include <sstream>
+#include <map>
+
+using namespace std;
+
+enum TransactionType { Add, Delete, ChangeOnHand, ChangePrice };
+
+typedef char String[25];
+
+struct BookRec {
+	unsigned int isbn;
+	String name;
+	String author;
+	int onhand;
+	float price;
+	String type;
+};
+
+struct TransactionRec {
+	TransactionType ToDo;
+	BookRec B;
+};
+
+void processTransaction(const string &master, const string &tFile, const string &newMaster, const string &errorFile) {
+	ifstream masterIn(master, ios::binary);
+	ifstream transactionIn(tFile, ios::binary);
+	ofstream masterOut(newMaster, ios::binary);
+	ofstream errorOut(errorFile);
+
+	if (!masterIn || !transactionIn || !masterOut || !errorOut) {
+		cerr << "Error opening one or more files" << endl;
+		return;
+	}
+
+	map<unsigned int, BookRec> masterData;
+	BookRec book;
+
+	// Read the master file into the map
+	while (masterIn.read(reinterpret_cast<char *>(&book), sizeof(BookRec))) {
+		masterData[book.isbn] = book;
+	}
+
+	TransactionRec transaction;
+	int transactionNumber = 0;
+
+	while (transactionIn.read(reinterpret_cast<char *>(&transaction), sizeof(TransactionRec))) {
+		transactionNumber++;
+		unsigned int isbn = transaction.B.isbn;
+
+		switch(transaction.ToDo) {
+			case Add:
+				if (masterData.find(isbn) == masterData.end()) {
+					masterData[isbn] = transaction.B;
+				} else {
+					errorOut << "Error in transaction number " << transactionNumber << ": cannot add---duplicate key " << isbn << endl;
+					cout << "Error in transaction number " << transactionNumber << ": cannot add---duplicate key " << isbn << endl;
+				}
+				break;
+
+			case Delete:
+				if (masterData.find(isbn) != masterData.end()) {
+					masterData.erase(isbn);
+				} else {
+					errorOut << "Error in transaction number " << transactionNumber << ": cannot delete---no such key " << isbn << endl;
+					cout << "Error in transaction number " << transactionNumber << ": cannot delete---no such key " << isbn << endl;
+				}
+				break;
+
+			case ChangeOnHand:
+				if (masterData.find(isbn) != masterData.end()) {
+					masterData[isbn].onhand += transaction.B.onhand;
+					if (masterData[isbn].onhand < 0) {
+						errorOut << "Error in transaction number " << transactionNumber << ": count = " << masterData[isbn].onhand << " for key " << isbn << endl;
+						cout << "Error in transaction number " << transactionNumber << ": count = " << masterData[isbn].onhand << " for key " << isbn << endl;
+						masterData[isbn].onhand = 0;
+					}
+				} else {
+					errorOut << "Error in transaction number " << transactionNumber << ": cannot change count---no such key " << isbn << endl;
+					cout << "Error in transaction number " << transactionNumber << ": cannot change count---no such key " << isbn << endl;
+				}
+				break;
+
+			case ChangePrice:
+				if (masterData.find(isbn) != masterData.end()) {
+					masterData[isbn].price = transaction.B.price;
+				} else {
+					errorOut << "Error in transaction number " << transactionNumber << ": cannot change price---no such key " << isbn << endl;
+					cout << "Error in transaction number " << transactionNumber << ": cannot change price---no such key " << isbn << endl;
+				}
+				break;
+		}
+	}
+
+	for (const auto &entry : masterData) {
+		masterOut.write(reinterpret_cast<const char *>(&entry.second), sizeof(BookRec));
+	}
+
+	masterIn.close();
+	transactionIn.close();
+	masterOut.close();
+	errorOut.close();
+
+	ifstream displayMaster(newMaster, ios::binary);
+	while (displayMaster.read(reinterpret_cast<char *>(&book), sizeof(BookRec))) {
+		cout << book.isbn << " "
+			 << book.name << " "
+			 << book.author << " "
+			 << book.onhand << " "
+			 << fixed << setprecision(2) << book.price << " "
+			 << book.type << endl;
+	}
+	displayMaster.close();
+}
+
+int main(int argc, char *argv[]) {
+	if (argc != 4) {
+		cerr << "Usage: " << argv[0] << " <master file> <transaction file> <new master file>" << endl;
+		return 1;
+	}
+
+	string masterFile = argv[1];
+	string transactionFile = argv[2];
+	string newMasterFile = argv[3];
+	string errorFile = "ERRORS";
+
+	processTransaction(masterFile, transactionFile, newMasterFile, errorFile);
+	return 0;
+}
+
+]0;king_jw@cobra:~/CSC310/projects/Prog112:30 AM > c++ update.cpp
+]0;king_jw@cobra:~/CSC310/projects/Prog112:30 AM > ./a.uot [K[K[K[Kout c++ update.cppat[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[K[2Plsmv testfile.cpp update.cpp [C[C[C[C[C[C[C[C[C[C[Cls[Kvim README [7Pexitvim testfile.cpp [3Pupdate.cpp[C[C[C[C[C[C[C[C[C[C[Cls[Kexitvim update.cpp[C[C[C[C[C[C[C[C[C[C[Cls[Kcd projects/Prog1/[9PCSC310ls[Kexitvim README touch READMEls[Kcd projects/Prog1/[9PCSC310ls[Kvim update.cppcreate.cppupdate.cpp[C[C[C[C[C[C[C[C[C[C[Cls[Kvim library.out [2Pary.out[C[C[C[C[C[C[C[C[C[C[Ccat library.out[C[C[C[C[C[C[C[C[C[C[Cls[Kcd projects/Prog1/[9PCSC310ls[Kexitssh assemble.cs.mercer.edu [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K[1Pexitssh assemble.cs.mercer.edu [C[C[C[C[C[C[C[C[C[C[Cexit[Kssh webclass.cs.mercer.edu[3Pmercer.edu[C[C[C[C[C[C[C[C[C[C[Cls[Kvim create.cpp[C[C[C[C[C[C[C[C[C[C[C[9@mv test2.cpp[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[12Prm test.cppls[Kcd projects/Prog1/[9PCSC310[5Pexit./a.outc++ test2.cpp [C[C[C[C[C[C[C[C[C[C[C[1Pvim test2.cpp[C[C[C[C[C[C[C[C[C[C[Cc++ test2.cpp [C[C[C[C[C[C[C[C[C[C[C[7P./a.out[3Pexitcd CSC310projects/Prog1/[C[C[C[C[C[C[C[C[C[C[Cls[Krm test.cppmv test2.cpp create.cpp[C[C[C[C[C[C[C[C[C[C[C[9Pvim[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kssh webclass.mercer.educs.mercer.edu[C[C[C[C[C[C[C[C[C[C[Cexit[Kssh assemble.cs.mercer.edu [C[C[C[C[C[C[C[C[C[C[Cexit[Kssh assemble.cs.mercer.edu [C[C[C[C[C[C[C[C[C[C[Cexit[K[2Plscd CSC310projects/Prog1/[C[C[C[C[C[C[C[C[C[C[Cls[Kcat library.out[C[C[C[C[C[C[C[C[C[C[C[1Pvim libary.outrary.out [C[C[C[C[C[C[C[C[C[C[Cls[Kvim update.cppcreate.cppupdate.cpp[C[C[C[C[C[C[C[C[C[C[Cls[Kcd CSC310projects/Prog1/[C[C[C[C[C[C[C[C[C[C[Cls[Ktouch README[1Pvim README [7Pexit[2Plscd CSC310projects/Prog1/[C[C[C[C[C[C[C[C[C[C[Cls[Kvim update.cpp[C[C[C[C[C[C[C[C[C[C[Cexit[K[2Plsvim update.cpptestfile.cpp [C[C[C[C[C[C[C[C[C[C[Cexit[Kvim README ls[Kmv testfile.cpp update.cpp [C[C[C[C[C[C[C[C[C[C[Cls[Kexitcat update.cpp++[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[6P./a.out c++ update.cpp[C[C[C[C[C[C[C[C[C[C[C[6P./a.out library.out transact.out update.u[Kout
+Error in transaction number 1: cannot add---duplicate key 123766891
+123766891 Tom Sawyer Twain, Mark 2 8.50 fiction
+239678325 Leaves of Grass Whitman, Walt 8 29.99 poetry
+249638325 Great Gatsby Fitzgerald, F. Scott 0 5.99 fiction
+259648323 Scarlet Letter Hawthorne, Nathaniel 12 4.78 fiction
+1229648991 Whisper of the River Sams, Ferrol 4 21.95 fiction
+1239678325 Moby Dick Melville, Herman 2 13.98 fiction
+2119674425 Last of the Mohicans Cooper, James Fenimore 1 8.75 fiction
+2269572525 Odyssey Homer 5 9.99 fiction
+3391679915 Heart of Darkness Conrad, Joseph 0 14.45 fiction
+3393578325 Les Miserables Hugo, Victor 2 19.98 fiction
+3791527325 Canterbury Tales Chaucer, Geoffrey 1 20.00 drama
+3925009464 Animal Farm Orwell, George 1 10.00 fiction
+3995783225 Old Man and the Sea Hemingway, Ernest 3 9.95 fiction
+]0;king_jw@cobra:~/CSC310/projects/Prog112:31 AM > exit
+exit
+
+Script done on 2025-01-27 00:31:41-05:00

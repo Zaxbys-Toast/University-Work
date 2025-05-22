@@ -1,0 +1,4 @@
+size: N = 4.
+sumlist: N = 10.
+reverse: N = [4, 3, 2, 1].
+

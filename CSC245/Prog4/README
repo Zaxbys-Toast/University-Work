@@ -1,0 +1,110 @@
+Problem Description : 
+
+	The problem we are faced with in this prject is finding the shortest path to each connected vertex in a graph using djikstras algorithm.
+
+Specification :
+
+	The functions I will be using include:
+		void construct()
+		void buildArray()
+		void printVertices()
+		int findIndex()
+		void djikstra()
+		bool compareByDistance();
+		void printTable();
+	Construct will create a graph from an input file as well as an array of vertices to be used in the buildArray function. This will be the foundation of the entire program.
+	Next the buildArray function will create an array of structs which contain the name of a vertex, its total distance, whether or not it has been marked, and the previous 
+	vertex. Print vertices is used in order to print out the vertices that are included in this array so that the client can have a list of vertices to choose from. Find index 
+	searches the array of structs in order to locate the position of a vertex in the array by using the name of the vertex. djikstra is the function which will actually implement
+	the algorithm. compareByDistance is used to return an array that has been sorted by the total distances, and is used for printing the table in sorted order. Finally printTable
+	is just a traversal of the array, printing out each section of the struct.
+
+Algorithm :
+	
+	First we will take imput from the command line in order to get our input file. This will be used to construct a directed graph as well as an array of vertex names. This array of
+	vertex names will then be used to create an array of structs with these names and initialize the other data fields to their unmarked form. Next we print out the array of vertex 
+	names in order for the user to see what their choices are for starting vertices. Using this input we can run the djikstra algorithm, checking that the vertex actually exists with
+	findIndex. Finally we sort the array of structs by their distance and print it out.
+
+Graph Class : 
+
+	The graph class contains a multitude of public functions, however, the only ones our algorithm will be using are AddVertex, AddEdge, GetToVertices, and WeightIs. These will allow
+	us to create our directed graph. AddVertex creates a new vertex in the private array storing vertices, AddEdge does the same thing in the array storing edges, GetToVertices shows
+	whether or not a vertice is reachable, and WeightIs shows the distance between two vertices.
+
+ginfile2.dat Adjaceny Matrix Step-by-Step:
+
+Starting out our adjaceny matrix looks like this
+	vertex		distance	previous	marked
+	v1		INF		N/A		no
+	v2		INF		N/A		no
+	v3		INF		N/A		no
+	v4		INF		N/A		no
+	v5		INF		N/A		no
+	v6		INF		N/A		no
+	v7		INF		N/A		no
+Now, starting at v1
+	vertex          distance        previous	marked
+        v1              0             	N/A		yes
+        v2              INF             N/A		no
+        v3              INF             N/A		no
+        v4              INF             N/A		no
+        v5              INF             N/A		no
+        v6              INF             N/A		no
+        v7              INF             N/A		no
+Choosing our lowest distance vertex to mark we get
+	vertex          distance        previous	marked
+        v1              0             	N/A		yes
+        v2              2               v1		no
+        v3              INF             N/A		no
+        v4              1             	v1		yes
+        v5              INF             N/A		no
+        v6              INF             N/A		no
+        v7              INF             N/A		no
+Now our next lowest including the path it took to get there
+	vertex          distance        previous	marked
+        v1              0               N/A		yes
+        v2              2               v1		yes
+        v3              INF             N/A		no
+        v4              1               v1		yes
+        v5              INF             N/A		no
+        v6              INF             N/A		no
+        v7              INF             N/A		no
+Again
+	vertex          distance        previous        marked
+        v1              0               N/A             yes
+        v2              2               v1              yes
+        v3              3             	v4              yes
+        v4              1               v1              yes
+        v5              INF             N/A             no
+        v6              INF             N/A             no
+        v7              INF             N/A             no
+^^^^
+	vertex          distance        previous        marked
+        v1              0               N/A             yes
+        v2              2               v1              yes
+        v3              3               v4              yes
+        v4              1               v1              yes
+        v5              3             	v4              yes
+        v6              INF             N/A             no
+        v7              5               v4              no
+
+^^^^
+	vertex          distance        previous        marked
+        v1              0               N/A             yes
+        v2              2               v1              yes
+        v3              3               v4              yes
+        v4              1               v1              yes
+        v5              3               v4              yes
+        v6              INF             N/A             no
+        v7              5               v4              yes
+^^^^
+	vertex          distance        previous        marked
+        v1              0               N/A             yes
+        v2              2               v1              yes
+        v3              3               v4              yes
+        v4              1               v1              yes
+        v5              3               v4              yes
+        v6              6             	v7              yes
+        v7              5               v4              yes
+	

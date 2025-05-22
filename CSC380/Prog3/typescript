@@ -1,0 +1,20 @@
+Script started on Tue 09 Apr 2024 03:39:46 PM EDT
+]0;king_jw@cobra:~/CSC380/Prog3[?1034h[king_jw@cobra Prog3]$ python3 eliza.py
+The doctor is in.
+What's on your mind?
+- I am ds  sad
+I am sorry to hear that you are sad
+- Why am I always sad               do I always feel this way
+Can you think of a specific example?
+- No
+Are you sure?
+- Often I am lonely                 Well, I get lonely sometimes
+How long have you felt lonely
+- Alwy ays
+Can you think of a specific example?
+- Not right now  . Bye
+Goodbye!
+]0;king_jw@cobra:~/CSC380/Prog3[king_jw@cobra Prog3]$ exit
+exit
+
+Script done on Tue 09 Apr 2024 03:41:13 PM EDT

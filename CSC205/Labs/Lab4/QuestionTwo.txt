@@ -1,0 +1,8 @@
+1. The size of an ArrayList is how many objects are contained within the Arraylist
+   and the capacity of the ArrayList is how many objects the ArrayList is able to hold before expanding.
+
+2. It can hold a changing amount of elements. Whenever the capacity is equal to the size the capacity is doubled
+
+3. They are mutable and able to change size
+
+4. One advantage of arrays is that they take up less space if you know exactly how many values you need and another is that arrays work much quicker.

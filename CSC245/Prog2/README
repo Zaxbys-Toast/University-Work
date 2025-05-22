@@ -1,0 +1,18 @@
+1. The goal of this program
+	:The goal of this program is to imitate the DC calculator in linux. It is a RPN calculator, meaning all operations are entered in prefix order. 
+
+2. The only input to the program is keyboard input which is turned into a string and then interpreted by the program. The output is a printed version of
+	the stack to the screen. It can print the top while popping it, print the whole stack, and just print the top. 
+
+
+3. This program uses iostream, cstdlib, and stack.h. iostream handles input and output to the commandline which allows for the program to work. It gives 
+  us cin. Next we use cstdlib which contains atoi function which will convert a string to an integer. Next we have stack.h which is what the entire program
+    is really built upon. It includes methods to make a stack, to find out if the stack is empty or full, to find the top of the stack, to pop the top of the stack,
+    to puish to the top of the stack, and the make the entire stack logically empty. It has private attributes, vector<object> theArray, which builds the array that
+    the stack is formed on, and an int topOfStack, which contains the top of the stack.
+
+4. My alogrithm runs through the options while cin remains true, meaning there is some input. It takes all input as a string, if the string only contains integers it
+  will just push it straight to the stack. If it contains operators it parses through the string and runs the operations based on when it finds the operators. It pushes 
+  any integers found within to the stack before doing the next operation. In order to enter negative numbers it goes through a while loop when it sees an _ that collects
+  integers before the next space or operator into a string then converts that to an integer and pushes it to the stack. I run through all of the options in a method called 
+  run which takes an input string and the stack. Finally all of the methods catch the proper exceptions based on what they do to the stack.

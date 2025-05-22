@@ -1,0 +1,37 @@
+Problem: Create a program that collects input from a file and adds it to a "library". It should be able to search for books in this library and print them out. 
+
+	Given some .dat input file, the user should be prompted with three choices: 
+	1) To print all of the books in that file. This will print a notecard for each book containing the title, author, copright date, etc. 
+	2) To search for a specific book in the file. If the book is found it will return the notecard of that book, otherwise it will say that the book was not
+	   found
+	3) This option exits the program
+	
+	In order to do this the data must first be sorted by alphabetical order. This can be done using a selection sort. Selection sorts work by taking
+	current index and checking if anything behind it is smaller. If there is something smaller the current index is moved and the smaller item is
+	put in its place. So, give an array with values [3,1,7,2,-1], the first sort would look like this: [-1,1,7,2,3], the second would look like:
+	[-1,1,7,2,3], the third would look like: [-1,1,2,7,3] and the final sort would look like [-1,1,2,3,7]. Next, to search for the books a binarySearch
+	method is used. This means the method checks the first last and middle slots for the key, if it isn't in one of those slots it determines if it is between
+	first and the middle or the last and the middle and changes its scope accordingly. Given the array [-1,1,2,3,7] and the key 3, the first search will choose 
+	index 0, index 3, and index 4, which correspond to -1, 2, and 7. Since 3 is between 2 and 7 it will use index 3, 3, and 4. 3 is between 3 and 7 so the next
+	middle index will be index 3 which is the correct number.
+
+Specification/Algorithm:
+
+	The program will use .dat files as input which will be sorted into an ArrayList which will then be used to run the three methods discussed above.
+	In order to do this I plan to create several methods.
+	1) A selection sort method. This will sort the ArrayList into alphabetical order so that a binary search may be used. It will take an ArrayList
+	   as input
+	2) A binary search method. This will take user input and find the book in the library based on it. It will use an ArrayList as input
+	3) An input method. This will input all of the values into the ArrayList
+	4) A start method. This will print the opening screen as well as take the file name for the input method.
+	5) A menu method. This will print out all of the options as well as the title of the program.
+	6) A clear screen method. This will clear the screen of any text in order to keep things looking nice.
+	7) A file method. This will return all of the applicable .dat files in the directory.
+	8) A stall method. This will prompt the user to hit a key in order to move on in the program. This won't actually require a certain key to be pressed
+	   but instead will just take input to a dummy variable in order "pause" the program.
+	9) A print method. This will take a index in the ArrayList and print all of the data associated with it in a nice format.
+	10) A print all method. This will print all of the books in the ArrayList in a readable format. Will sue the stall and clear screen methods to keep everything
+	    neat
+	11) A run method. This will use the binary search, menu, clear screen, stall, print all, and print single methods in order to create the user interface
+	   as well as keep the program running. Will accept different cases in order to tell which methods to use.  
+

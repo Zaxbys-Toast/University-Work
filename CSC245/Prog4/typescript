@@ -1,0 +1,40 @@
+Script started on Thu 14 Dec 2023 08:54:51 AM EST
+]0;king_jw@cobra:~/CSC245/Prog4[?1034h[king_jw@cobra Prog4]$ c++ djikstra.cpp 
+]0;king_jw@cobra:~/CSC245/Prog4[king_jw@cobra Prog4]$ ./a.out ginfile1.dat 
+cBuilt a Directed Graph for:
+Austin	Dallas	Washington	
+Atlanta	Houston	Denver	
+Chicago	
+What vertex would you like to start from?
+Atlanta
+-----------------------------------------
+Vertex		Distance	Previous
+Atlanta		0		N/A
+Washington		600		Atlanta
+Houston		800		Atlanta
+Dallas		1900		Washington
+Austin		2100		Dallas
+Denver		2680		Dallas
+Chicago		2800		Dallas
+-----------------------------------------
+]0;king_jw@cobra:~/CSC245/Prog4[king_jw@cobra Prog4]$ ./a.out ginfile1.dat [1P[1@2
+cBuilt a Directed Graph for:
+V1	V2	V5	
+V4	V3	V6	
+V7	
+What vertex would you like to start from?
+V1
+-----------------------------------------
+Vertex		Distance	Previous
+V1		0		N/A
+V4		1		V1
+V2		2		V1
+V5		3		V4
+V3		3		V4
+V7		5		V4
+V6		6		V7
+-----------------------------------------
+]0;king_jw@cobra:~/CSC245/Prog4[king_jw@cobra Prog4]$ exit
+exit
+
+Script done on Thu 14 Dec 2023 08:55:24 AM EST

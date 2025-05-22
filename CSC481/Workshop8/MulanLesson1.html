@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<body>
+<style type="text/css">
+ p {margin-bottom: 0em;  margin-top: 0em;} 
+ * {
+    box-sizing: border-box;
+ }
+
+ .row {
+    display: flex;
+ }
+
+ .column {
+    flex: 50%;
+    padding: 10px;
+ }
+
+  /* Popup container */
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* The actual popup (appears on top) */
+.popup .popuptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class when clicking on the popup container (hide and show the popup) */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+} 
+
+</style>
+<h1 id="lesson-header">第一课 我叫徐文长<br>
+<input type="image" src="image/ReadAloud.png" onclick="speakInEnglish()" />
+</h1>
+
+
+<div class="row">
+  <div class="column" style="background-color:#aaa;">
+	<p id="text-1" style="color:blue;font-size:30px;">我叫徐文长。</p>
+	<br>
+	<input type="image" src="image/ReadAloud.png" onclick="SpeakInMandrin(1)" />
+	<p id="text-2" style="color:blue;font-size:30px;">我是中国人。</p>
+	 <div class="popup" onclick="myFunction()">English Version!
+  		<span class="popuptext" id="myPopup">The english phrase of the text...</span>
+	</div> 
+	<br>
+	<input type="image" src="image/ReadAloud.png" onclick="SpeakInMandrin(2)" />
+	<p id="text-3" style="color:blue;font-size:30px;">我会讲故事。</p>
+	<input type="image" src="image/ReadAloud.png" onclick="SpeakInMandrin(3)" />
+  </div>
+  <div class="column" style="background-color:#bbb;">
+		<img src="image/Lesson1Picture1.png" alt="Xu Wenchang portrait" width="180" height="268">
+  </div>
+</div>
+
+<input type="image" src="image/prev.png" onclick="" />		
+<input type="image" src="image/next.png" onclick="window.location.href='nextPage.html';" />		
+
+<p id="demo"></p>
+
+<script>
+function SpeakInMandrin(id) {
+	var msg = new SpeechSynthesisUtterance();
+	//msg.text = "你好";
+	msg.text = document.getElementById("text-"+id).innerHTML;
+	msg.lang = 'zh-CN'
+	window.speechSynthesis.speak(msg);
+	document.getElementById("demo").innerHTML = 
+		document.getElementById("pinyin-"+id).innerHTML;
+}
+
+function speakInEnglish() {
+	var msg = new SpeechSynthesisUtterance();
+	//msg.text = "你好";
+	//msg.text = document.getElementById("lesson-header").innerHTML;
+	msg.text = "Learn Chinese With MooLaan";
+	msg.lang = 'en-US'
+	window.speechSynthesis.speak(msg);
+	document.getElementById("demo").innerHTML = 
+		document.getElementById("lesson-header").innerHTML;
+}
+
+// When the user clicks on <div>, open the popup
+function myFunction() {
+  var popup = document.getElementById("myPopup");
+  popup.classList.toggle("show");
+}
+</script>
+
+</body>
+</html>

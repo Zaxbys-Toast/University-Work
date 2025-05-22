@@ -1,0 +1,34 @@
+# Simulated Game of Life #
+
+Problem: 
+	Attempting to create a simulation of the game of life in python. The colony will evolve based on the number of 
+	"live" neighbors it has
+
+Methods:
+	main: 
+		Printing out the starting menu, taking input for the number of generations, and then running the methods
+
+	openBoard: 
+		Will check for the -f flag. If it is there it will open the filename associated with it unless 
+		that file doesn't exist, in which cae it throws an error. If the -f flag is not there it will just
+		create a board at random. The board will be initialized as a 20x20 numpy array (2d array)
+
+	countNeighbors:
+		Will be given a coordinate for the cell it is checking along with the colony. It will then loop through i-1
+		, i, i+1, j-1, j, etc. until all of the surrounding squares have been checked. It will return a value with 
+		the number of neighbors at that coordinate. This will be used in the applyRules function in order to determine
+		whether or not a cell is "fit".
+
+	applyRules:
+		This is the evolution method. It will take the colony array as input. It will create a new array based on the
+		original colony which will be updated using the rules. First it will check if the cell is 0 and if so it will 
+		determine whether or not the cell should be spread to. If the cell is not 0 then it will check if it's 10. If 
+		it is then the cell will be reset to 0 (killed). If it isn't the neighbors will be checked to see if it is
+		fit or not. 2 and 3 neighbors are fit. 
+
+	printBoard:
+		A simple loop to print out the colony.
+
+Notes: I feel like my program is pretty efficient. I ran into tsome problems with the array creation from the files but
+	eventually I was able to work through it. I believe the program is working as it should.
+		

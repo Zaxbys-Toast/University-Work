@@ -1,0 +1,38 @@
+Script started on Wed 18 Jan 2023 03:16:02 PM EST
+]0;king_jw@cobra:~/Labs/Lab1[?1034h[king_jw@cobra Lab1]$ cat Prog1.java
+
+import java.util.*;
+import java.io.*;
+
+//  Lab program 1
+//  This program reads integers and stops when 0 is read.
+//  It will print the product of all the integers before the 0.
+
+//  The program contains no error handling.
+
+public class Prog1 
+{
+	public static void main (String[] args) throws IOException
+	{
+
+   		int Product = 1;
+   		int value;
+                Scanner in = new Scanner(System.in);
+		value = in.nextInt();
+
+   		while (value != 0)
+   		{
+      			Product *= value;
+		        value = in.nextInt();
+   		}
+
+   		System.out.println("The product is "  + Product);
+	}
+}
+]0;king_jw@cobra:~/Labs/Lab1[king_jw@cobra Lab1]$ javac Prg1.javaog1.java[C[C[C[C[C[C[C
+]0;king_jw@cobra:~/Labs/Lab1[king_jw@cobra Lab1]$ java Prog1 < data1.dat
+The product is -3628800
+]0;king_jw@cobra:~/Labs/Lab1[king_jw@cobra Lab1]$ exit
+exit
+
+Script done on Wed 18 Jan 2023 03:17:01 PM EST

@@ -1,0 +1,380 @@
+Script started on Tue 14 Nov 2023 12:09:09 AM EST
+]0;king_jw@cobra:~/CSC245/Prog3[?1034h[king_jw@cobra Prog3]$ exitcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cpp
+     1	#include <iostream>
+     2	#include <fstream>
+     3	#include <cstdlib>
+     4	#include "huffman.h"
+     5	#include <stdio.h>
+     6	using namespace std;
+     7	void Insert(const int Letters[], HuffmanTree& h, int header);
+     8	void Frequency(ifstream& input, int Letters[], int argc, char *argv[], int source, string& s);
+     9	void Compress(ifstream& input, int argc, char *argv[], int Letters[256], HuffmanTree& h, int source, string& s, int header);
+    10	
+    11	int main(int argc, char* argv[])
+    12	{
+    13		string s;
+    14		int header = 0;
+    15		int source = 0;
+    16		int Letters[256];
+    17		string input;
+    18		if(argc > 1)
+    19			input = argv[1];
+    20		HuffmanTree h;
+    21		ifstream infile;
+    22		if(argc <= 1)
+    23		{
+    24			cout << "No file entered!" << endl;
+    25			exit(1);
+    26		}
+    27		
+    28		else if(input.compare("--help") == 0)
+    29		{
+    30			infile.open("help");
+    31			string in;
+    32			while(!infile.eof())
+    33			{
+    34				getline(infile, in);
+    35				cout << in << endl;
+    36			}
+    37			exit(1);
+    38		}
+    39		else
+    40		{
+    41			if(input.compare("--t") == 0)
+    42				infile.open(argv[2]);
+    43			else
+    44				infile.open(argv[1]);
+    45			if(infile.fail())
+    46			{
+    47				cout << "Failed to open file" << endl;
+    48				exit(1);
+    49			}
+    50			Frequency(infile, Letters, argc, argv, source, s);
+    51	                Insert(Letters, h, header);
+    52	                h.build();
+    53	                Compress(infile, argc, argv, Letters, h, source, s, header);
+    54			infile.close();
+    55		}
+    56	
+    57		return 0;
+    58	}
+    59	
+    60	void Frequency(ifstream& input, int Letters[], int argc, char *argv[], int source, string& s)
+    61	{
+    62		string filename;
+    63		char ch;
+    64		if (argc > 2)
+    65			filename = argv[2];
+    66		else
+    67			filename = argv[1];
+    68		for (int i = 0; i < 256; i++)
+    69		{
+    70	                Letters[i] = 0;
+    71		}
+    72		input.get(ch);
+    73		while (input)
+    74		{
+    75			Letters[ch] += 1;
+    76			s += ch;
+    77			input.get(ch);
+    78		}
+    79	}
+    80	
+    81	
+    82	void Insert(const int Letters[], HuffmanTree& h, int header)
+    83	{
+    84	    // Use unique ASCII values for special characters
+    85	   	const char newlineChar = '\n';
+    86	       	const char spaceChar = ' ';
+    87	   
+    88	           // Insert characters into the Huffman tree
+    89	       	for (char ch = char(0); ch <= char(126); ch++)
+    90	        {
+    91	                if (Letters[ch] != 0)
+    92	                {
+    93	                       char insertChar = ch;
+    94	                       if (ch == newlineChar)
+    95	                       {
+    96	                               insertChar = '^'; // Use a unique ASCII value for newline
+    97	                       }
+    98	                       else if (ch == spaceChar)
+    99	                       {
+   100		                       insertChar = '$'; // Use a unique ASCII value for space
+   101	                       }
+   102	                       h.insert(insertChar, Letters[ch]);
+   103		               header++;
+   104		       }
+   105		}
+   106	}
+   107	
+   108	void Compress(ifstream& input, int argc, char *argv[], int Letters[256], HuffmanTree& h, int source, string& s, int header)
+   109	{
+   110		int compressed = 0;
+   111		float ratio;
+   112		string in = argv[1];
+   113		string filename;
+   114		if(argc > 2)
+   115			filename = argv[2];
+   116		else
+   117			filename = argv[1];
+   118		if (!input.is_open())
+   119		{
+   120			cout << "The file is not open!" << endl;
+   121			exit(1);
+   122		}
+   123		else
+   124		{
+   125			header = h.numNodes() - (h.numNodes() / 2);
+   126			filename += ".zip";
+   127			ofstream output;
+   128			output.open(filename.c_str());
+   129			output << header << endl;
+   130			for(char ch = ' '; ch <= '~'; ch++)
+   131			{
+   132				if(Letters[ch] != 0)
+   133				{
+   134					if(ch != '\n' && ch != ' ')
+   135					{
+   136						output << (int)ch << " " << h.GetCode(ch) << endl;
+   137						source++;
+   138					}
+   139					else if(ch == '\n')
+   140					{
+   141						output << (int)ch << " " << h.GetCode('^') << endl;
+   142						source++;
+   143					}
+   144					else if(ch == ' ')
+   145					{
+   146						output << (int)ch << " " << h.GetCode('$') << endl;
+   147						source++;
+   148					}
+   149				}
+   150			}	
+   151			if ( in.compare("--t") == 0 && argc > 2)
+   152			{
+   153				h.PrintTable();
+   154			}	
+   155			char code;
+   156			for(int i = 0; i < s.length(); i++)
+   157			{
+   158				code = s[i];
+   159				output << h.GetCode(code);
+   160				compressed++; 
+   161			}
+   162			output << endl;
+   163			output.close();
+   164			ratio = (1 -(float)(compressed/((float)source*8))) * 100;
+   165			cout << "File successfully compressed to " << compressed << " bits. " << ratio << "% less" << endl;
+   166		}
+   167			
+   168	}
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ cat -n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cpp[1Phuffman.h
+#include <vector>
+#include <string>
+using namespace std;
+
+struct HNode {
+    char ch;
+    int weight;
+    int parent;
+    int childType;
+};
+
+class HuffmanTree {
+    public:
+	HuffmanTree();				// constructor
+
+	void insert(char ch, int weight);	// inserts a character and its associated weight
+						// into a node of the Huffman tree
+
+	bool inTree(char ch);			// returns a boolean value indicating whether
+						// a given character is stored in the tree
+		
+	int GetFrequency(char ch);		// returns the weight of a given character
+
+	
+	void build();				// Builds the Huffman Tree;
+	
+
+	string GetCode(char ch);		// returns the compressed code of a given
+						// character in the tree using recursion
+
+	void PrintTable();			// displays the Huffman encoding table used in
+						// the compression process
+	
+	int numNodes();				// returns the number of nodes currently in Huffman 
+						// tree
+
+    private:
+	vector<HNode> nodes;
+	int numChars;
+	bool built;                             
+	
+	int lookUp(char ch);			// returns the index of a given character in tree
+	int GetFrequency(int i);		// returns the weight at a given index
+	string GetCode(int i);			// returns the compressed code of the character at 
+						// a given index
+};
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ cat huffman.h-n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Phcpp
+#include "huffman.h"
+#include <iostream>
+using namespace std;
+
+HuffmanTree:: HuffmanTree()
+	: numChars(0), built(false) {}
+
+void HuffmanTree:: insert(char ch, int weight) {
+    HNode newNode = {ch, weight, -1, -1}; 
+    built = false;
+    nodes.push_back(newNode);
+    numChars++;
+
+}
+
+bool HuffmanTree:: inTree(char ch) {
+	return lookUp(ch) != -1;
+}
+
+int HuffmanTree:: GetFrequency(char ch) {
+	return GetFrequency(ch);
+}
+
+int HuffmanTree:: GetFrequency(int i) {
+	char ch;
+	int Letters[256];
+	for (ch = char(0); ch <= char(126); ch++)
+	{
+		Letters[ch] = 0;
+	}	
+	cin.get(ch);
+	while(cin)
+	{
+		Letters[ch] += 1;
+		cin.get(ch);
+	}				
+	return Letters[ch];
+}
+
+int HuffmanTree:: lookUp(char ch) {
+	
+	for(int i = 0; i < numChars; i++)
+	{
+		if (nodes[i].ch == ch)
+			return i;
+	}
+	return -1;
+}
+
+string HuffmanTree:: GetCode(char ch) {
+
+	return GetCode(lookUp(ch));
+}
+
+
+string HuffmanTree::GetCode(int i) {
+    	if (nodes[i].parent == -1)
+        	return "";
+	else
+		return (GetCode(nodes[i].parent) + (char)(nodes[i].childType + '0'));
+    
+}
+
+void HuffmanTree:: PrintTable() {
+
+	int num = 1;
+	cout << "\t++++Encoding Table++++\n" << endl;
+	cout << "INDEX\tCHAR\tWEIGHT\tPARENT\tCHILD TYPE" << endl;
+	for(int i = 0; i < numChars; i++)
+	{
+		if(nodes[i].ch != ' ' && nodes[i].ch != '\0')
+		{
+			cout << i << "\t" << nodes[i].ch << "\t" << nodes[i].parent << "\t" << nodes[i].childType << endl;
+		} 
+		else if (nodes[i].ch == '\0' && nodes[i].childType != -1)
+		{
+			cout << i << "\t" << 'T' << num << "\t" << nodes[i].weight << "\t" << nodes[i].parent << "\t" << nodes[i].childType << endl;
+			num++;
+		}
+		else
+		{
+			cout << i <<"\t" << 'T' <<num<< "\t" << nodes[i].weight << "\t" << "0" << "\t" << "-1" << endl;	
+			num++;
+		}
+	}
+}
+
+int HuffmanTree:: numNodes() {
+	return numChars;
+}
+
+
+void HuffmanTree::build()
+{
+	int max = (numChars * 2) - 1;
+	while(max > numChars)
+	{
+		int min1 = -1;
+		int min2 = -1;
+		for(int i = 0; i < numChars; i++)
+		{
+			if(nodes[i].parent == -1)
+			{
+				if(min1 == -1 || nodes[i].weight < nodes[min1].weight)
+				{	
+					min2 = min1;
+					min1 = i;
+				}
+				else if(min2 == -1|| nodes[i].weight < nodes[min2].weight)
+				{
+					min2 = i;
+				}
+			}
+		}
+
+	
+		HNode temp = {'\0', nodes[min1].weight + nodes[min2].weight, -1, -1};
+		nodes.push_back(temp);
+
+		nodes[min1].parent = nodes.size() - 1;
+		nodes[min1].childType = 0;
+		nodes[min2].parent = nodes.size() - 1;
+		nodes[min2].childType = 1;
+
+		numChars++;
+	}
+	
+	nodes[nodes.size() - 1].parent = -1;
+	built = true;
+}
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ cat huffman.cpp[2Ph-n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[3@++ -c[C[C[C[C[C[C[C[C[C[C[C[C
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ c++ -c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cppzip.cpp huffman.o
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ c++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cppzip.cpp huffman.o[7Pmv a.out myZip
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ mv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cppexit[Kcat sample3mv a.out myUnzip[3Pc++ unzip.cpp
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ c++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cppexit[Kcat sample3mv a.out myUnzip
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ mv a.out myUnzip[3Pc++ unzip.cppmv a.out myZipc++ zip.cpp huffman.o[3P-c huffman.cpp[3Pat[C[C[C[C[C[C[C[C[C[C[C[C[2Ph-n zip.cppexit[Kcat sample3
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+blah blah blah blah blah blah blah blah blah blah
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ ./myZip sample3
+File successfully compressed to 500 bits. -1150% less
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ cat [K[K[K[K./myUnzip sample3.zip
+File Inflated
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ exit[K[K[K[Kcat sample3.zip
+6
+32 101
+97 110
+98 111
+104 00
+108 01
+111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000111011100010000
+]0;king_jw@cobra:~/CSC245/Prog3[king_jw@cobra Prog3]$ exit
+exit
+
+Script done on Tue 14 Nov 2023 12:11:11 AM EST

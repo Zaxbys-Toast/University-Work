@@ -1,0 +1,33 @@
+Will King
+1/23/25
+Project 1 - The Binary Book Database
+
+1. The purpose of this portion of the project is to develop a program that 
+   can process a number of transactions that may take place in a library 
+   database and then store them in binary files. This allows the files to take up
+   less space and are faster to navigate. 
+
+2. Input to the program should be provided in the form of two binary files,
+   one containing the original database to be used, and another containing the
+   transactions that are to occur. The structuree of both of these should be very similar
+   as they both contain the same BookRec struct, however, the transaction file will have
+   these contained in another struct called a TransactionRec which specifies which transaction
+   should be perfomed on each record. The output should first produce a file that contains
+   the new book database with the transactions in place. In addition, any errors that occur
+   while processing the transactions should be printed to the screen. The transactions that may
+   occur involve adding a book to the database, removing a book from the database, changing the 
+   price of a book, and changing the amount of a book that is available. Once again, any errors that
+   occur while processing these should be printed on the screen.
+
+3. The algorithm for this program is fairly simple, albeit probably not the best for super large files.
+   Firstly the program gets input from the command line in order to determine the names/locations of the
+   three files it needs to operate. First it gets the original library file, then the transaction file, and 
+   lastly the file that will store the updated database. Then using these it runs a method called processTransactions.
+   This method first opens all of the input files, the file that will get the output, and a file for error output. Now
+   it parses through the original database file and puts each of the BookRecs it contains into a Map for easy look-up.
+   It then parses through the transaction file and processes the transactions that must occur and prints out errors to both
+   the screen and the error file when it comes across them. It then closes the transaction file and the output files. Finally
+   it creates a new ifstream in order to read the new master file, which it prints to the screen, and then it closes that
+   and the program is finished. This could definitely be made to be more efficient, particularly through storing the exact
+   byte offsets that each of the BookRecs are at and editing those positions in memory in the original file, which would allow 
+   us to keep from creating a new file, however, we would then lose the original file.
