@@ -1,0 +1,25 @@
+body {
+  background: #000000;
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+@font-face {
+  font-family: 'mokoto';
+  src: url('../assets/mokoto-font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+}

@@ -1,0 +1,156 @@
+/*-------------------- This is for the dropdown menu -----------------------*/
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  right: 0;
+  top: 75px; /* Adjust this to position the menu */
+  width: 17em;
+  padding: 10px;
+}
+
+.dropdown-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dropdown-menu ul li {
+  padding: 8px 12px;
+}
+
+.dropdown-menu ul li a {
+  text-decoration: none;
+  color: white;
+  display: block;
+}
+
+.dropdown-menu ul li:hover {
+  background-color: #ea8602;
+}
+
+/*---------------------- This is for the header --------------------*/
+
+/* Show dropdown when 'open' class is added */
+.container.open .dropdown-menu {
+  display: block;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: var(--background);
+  position: fixed; /* Fixed at the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: black;
+}
+.header-image {
+  height: 50px; /* Adjust the height as needed */
+  width: auto;  /* Maintain aspect ratio */
+  margin-right: 10px;
+  object-fit: cover; /* Optional: ensure the image fits well within the space */
+  border-radius: 0.5em;
+  margin-top: -17px;
+}
+.header-title {
+  display: flex;
+  align-items:center;
+  text-align: center;
+  color: white;
+  font-size: 1.5em;
+  font-family: 'mokoto', sans-serif;
+}
+
+.container {
+  display: flex;
+  align-items: center; /* Align text and icon vertically */
+  gap: 10px; /* Adjusts spacing between text and icon */
+  cursor: pointer;
+}
+
+.text {
+  color: white;
+  display: flex;
+  white-space: nowrap;
+  font-family: 'mokoto', sans-serif;
+  font-size: 1.5em;
+  user-select: none;
+  position: relative;
+  word-break: break-word;
+  /*top: -25px;*/
+}
+
+/*-------------------- This is for the Chevron -------------------*/
+.arrow-icon {
+  background-color: black;
+  height: 2.8em;
+  width: 2.8em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5em;
+  margin: 1em auto;
+  position: relative;
+  border-radius: 4px;
+  top: 18px;
+  margin-right: 1em;
+}
+
+.left-bar, .right-bar {
+  position: absolute;
+  background-color: transparent;
+  width: 40px;
+  height: 10px;
+  display: block;
+  border-radius: 2px;
+}
+
+.left-bar {
+  top: 0;
+  left: 0;
+  transform: rotate(35deg);
+}
+
+.right-bar {
+  top: 0;
+  left: 26px;
+  transform: rotate(-35deg);
+}
+
+.left-bar:after, .right-bar:after {
+  content: "";
+  background-color: #ea8602;
+  width: 40px;
+  height: 10px;
+  display: block;
+  border-radius: 6px 10px 10px 6px;
+  transition: all 0.5s cubic-bezier(.25, 1.7, .35, .8);
+}
+
+.right-bar:after {
+  border-radius: 10px 6px 6px 10px;
+}
+
+.open .left-bar:after {
+  transform-origin: center center;
+  transform: rotate(-70deg);
+}
+
+.open .right-bar:after {
+  transform-origin: center center;
+  transform: rotate(70deg);
+}
+
+/* Media query for screen width less than 690px */
+@media screen and (max-width: 690px) {
+  p {
+    font-size: 14px;  /* Smaller text size for screens less than 690px */
+  }
+}
