@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: Mproject.Mproject
+Class-Path: . Mproject/ Mproject/lib/mssql-jdbc-6.4.0.jre8.jar
