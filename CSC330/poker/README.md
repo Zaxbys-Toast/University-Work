@@ -61,12 +61,13 @@ csc Poker.cs Deck.cs Player.cs Card.cs
 ./Poker.exe [file path]
 ```
 
-##Java
+## Java
 ### Usage
+```
 cd Java
 javac Poker.java Deck.java Player.java Card.java
 java Poker [file path]
-
-##Fortran
+```
+## Fortran
 ### Usage
 
